@@ -1,0 +1,66 @@
+name: Build SPECTRA for Windows
+
+on:
+  push:
+  workflow_dispatch:
+  release:
+    types: [published]
+
+jobs:
+  build:
+    name: Compile Windows executable
+    runs-on: windows-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Check out public source
+        uses: actions/checkout@v4
+
+      - name: Install Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: false
+
+      - name: Check Go source
+        run: go vet ./...
+
+      - name: Build SPECTRA
+        run: go build -trimpath -ldflags "-H=windowsgui -s -w" -o SPECTRA_v2.5.exe .
+
+      - name: Generate SHA-256 checksum
+        shell: pwsh
+        run: |
+          $hash = (Get-FileHash -Algorithm SHA256 -Path .\SPECTRA_v2.5.exe).Hash.ToLowerInvariant()
+          "$hash  SPECTRA_v2.5.exe" | Set-Content -Encoding ascii SHA256SUMS.txt
+          Get-Content SHA256SUMS.txt
+
+      - name: Upload downloadable build
+        uses: actions/upload-artifact@v4
+        with:
+          name: SPECTRA-v2.5-Windows
+          path: |
+            SPECTRA_v2.5.exe
+            SHA256SUMS.txt
+          if-no-files-found: error
+
+  release:
+    name: Attach compiled EXE to GitHub Release
+    if: github.event_name == 'release'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download compiled build
+        uses: actions/download-artifact@v4
+        with:
+          name: SPECTRA-v2.5-Windows
+          path: dist
+
+      - name: Attach executable and checksum to the published release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          GH_REPO: ${{ github.repository }}
+        run: gh release upload "$RELEASE_TAG" dist/SPECTRA_v2.5.exe dist/SHA256SUMS.txt --clobber
