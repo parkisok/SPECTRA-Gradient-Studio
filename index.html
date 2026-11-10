@@ -1,0 +1,717 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>SPECTRA — Dual Sprite Cutout Lab v2.5</title>
+<style>
+:root{color-scheme:dark;--bg:#080b14;--panel:#111624;--panel2:#151c2c;--line:#273147;--text:#edf0fc;--muted:#8e9ab2;--pink:#f274d0;--cyan:#63e4e5;--purple:#9675ff}
+*{box-sizing:border-box}html{min-height:100%;background:var(--bg)}body{margin:0;font:14px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--text);background:radial-gradient(ellipse 50% 34% at 13% 0%,#6a319126,transparent 75%),radial-gradient(ellipse 42% 30% at 85% 3%,#0d8cad18,transparent 80%),var(--bg)}button,input,select{font:inherit}button{cursor:pointer}button:disabled{opacity:.45;cursor:wait}input[type=range]{accent-color:#aa8afa;cursor:pointer;width:100%}input[type=color]{cursor:pointer;border:0;padding:0;background:transparent}
+.shell{max-width:1390px;margin:0 auto;padding:24px 28px 60px}
+.header{display:flex;justify-content:space-between;align-items:center;gap:20px;margin-bottom:25px}.brand{display:flex;align-items:center;gap:15px}.brand-mark{width:45px;height:45px;border-radius:14px;background:conic-gradient(from 70deg,#f38cd9,#8078ff,#4fdee3,#f38cd9);display:grid;place-items:center;box-shadow:0 0 32px #bc77fd35;color:#0e0a1b;font-size:27px;font-weight:800}.brand h1{font-size:23px;letter-spacing:.19em;font-weight:800;margin:0;line-height:1}.brand small{display:block;margin-top:6px;color:var(--muted);font-size:11px;letter-spacing:.11em;text-transform:uppercase}.header-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+.btn{border-radius:11px;border:1px solid var(--line);background:#192236;color:var(--text);padding:10px 15px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:42px;transition:background .15s,transform .15s,border-color .15s;white-space:nowrap}.btn:hover{background:#26324c;transform:translateY(-1px);border-color:#53607b}.btn-primary{border:0;background:linear-gradient(115deg,#c678f6,#927bff 48%,#6cc7e4);color:#100c24}.btn-primary:hover{background:linear-gradient(115deg,#d690ff,#a494ff,#7be8ef)}.btn-ghost{background:#111827}.btn-small{font-size:12px;padding:7px 10px;min-height:34px}.btn-icon{width:42px;padding:0;font-size:19px}.btn-light{background:#212742;border-color:#4f5072}
+.layout{display:grid;grid-template-columns:minmax(390px,1.15fr) minmax(360px,.85fr);gap:22px;align-items:start}.column{min-width:0}.panel{border:1px solid #263148;border-radius:21px;background:linear-gradient(154deg,#141a2bcc,#0f1422e8);box-shadow:0 16px 44px #00000020;overflow:hidden}.panel-pad{padding:21px}.section-head{display:flex;justify-content:space-between;gap:8px;align-items:center}.section-title{font-size:12px;text-transform:uppercase;font-weight:800;letter-spacing:.13em;color:#c4cae0}.muted{color:var(--muted)}.eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:.15em;color:#8f9ab3;font-weight:750}.value-label{color:#bdc6de;font-size:12px;font-weight:700;font-variant-numeric:tabular-nums}
+.preview-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:19px 22px 14px}.asset-name{font-size:15px;font-weight:800;max-width:260px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}.tag{border:1px solid #394057;border-radius:8px;padding:5px 9px;font-size:11px;color:#aebbd4;background:#1b2234;white-space:nowrap}.preview-tabs{display:flex;gap:4px;background:#0b101e;padding:4px;border-radius:10px;border:1px solid #242c40}.preview-tab{border:0;background:transparent;color:#929db8;padding:7px 13px;border-radius:7px;font-size:12px;font-weight:700}.preview-tab.active{color:#fff;background:#303850}
+.stage-wrap{padding:0 20px}.stage{position:relative;width:100%;max-width:550px;margin:auto;aspect-ratio:1;border-radius:17px;overflow:hidden;border:1px solid #333e53;background-color:#1d2433;background-image:linear-gradient(45deg,#263044 25%,transparent 25%),linear-gradient(-45deg,#263044 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#263044 75%),linear-gradient(-45deg,transparent 75%,#263044 75%);background-size:30px 30px;background-position:0 0,0 15px,15px -15px,-15px 0;display:flex;align-items:center;justify-content:center;touch-action:none}#previewCanvas{width:100%;height:100%;display:block;image-rendering:pixelated;image-rendering:crisp-edges}.drag-layer{display:none;position:absolute;inset:12px;z-index:4;border:2px dashed #b5a4ff;border-radius:14px;background:#271b49d9;align-items:center;justify-content:center;text-align:center;font-size:18px;font-weight:800;pointer-events:none}.stage.dragging .drag-layer{display:flex}.stage-caption{position:absolute;bottom:14px;left:14px;background:#080e1bc9;border:1px solid #ffffff26;padding:6px 10px;border-radius:8px;color:#c9d6f1;font-size:11px;z-index:2;pointer-events:none}.split-line{position:absolute;top:0;bottom:0;border-left:2px solid #fffe;z-index:2;pointer-events:none;display:none}.split-line:after{content:'↔';position:absolute;top:50%;left:0;transform:translate(-50%,-50%);display:grid;place-items:center;width:28px;height:28px;border-radius:99px;background:#fff;color:#121424;font-weight:900;font-size:16px}.stage.compare{cursor:ew-resize}.stage.compare .split-line{display:block}
+.player{display:flex;align-items:center;gap:13px;padding:16px 22px 13px}.play{border:1px solid #556188;background:#263354;color:#fff;width:42px;height:42px;flex:none;border-radius:12px;font-size:17px}.timeline{flex:1;min-width:0}.timeline input{width:100%;display:block}.time-row{display:flex;justify-content:space-between;color:var(--muted);font-size:11px;letter-spacing:.03em;margin-top:3px}.info-line{display:flex;align-items:center;justify-content:space-between;gap:12px;border-top:1px solid #273148;padding:13px 22px 16px;font-size:12px;color:#99a7bf}.live-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#4fe2ae;box-shadow:0 0 10px #4fe2ae;margin-right:6px}.preview-hint{margin-top:16px;display:flex;justify-content:space-between;gap:16px;color:#8590a9;font-size:12px}.library-panel{margin-top:14px}.library-row{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;margin-top:12px}.library-row .btn{min-height:40px}.library-row .select{padding:10px 12px}.library-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:11px}.library-meta{display:flex;justify-content:space-between;gap:10px;margin-top:9px;font-size:11px;color:#92a3be}.library-meta span:last-child{text-align:right}.library-empty{color:#75839e}.library-count{font-weight:700;color:#cad6ef}
+.preset-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin-top:15px}.preset{border:1px solid #344056;background:#111a29;border-radius:12px;text-align:left;padding:7px;min-width:0;color:#c4cee2;transition:transform .15s,border-color .15s}.preset:hover{transform:translateY(-2px);border-color:#a68df4}.preset.active{border-color:#bf92ff;background:#241d3a;box-shadow:0 0 0 1px #a874f859}.preset .gradient{height:34px;border-radius:7px;margin-bottom:7px}.preset .preset-name{font-size:11px;display:block;font-weight:750;text-overflow:ellipsis;white-space:nowrap;overflow:hidden}.right-gap{margin-top:16px}.block-pad{padding:21px}.divider{border-top:1px solid #283147;margin:21px -21px}
+.help-text{color:#919fbb;font-size:12px;margin-top:8px;line-height:1.6}
+.swatches{display:flex;flex-wrap:wrap;gap:9px;margin:13px 0}.swatch{width:59px;padding:7px 5px 5px;background:#101727;border:1px solid #334056;border-radius:11px;position:relative;text-align:center}.swatch input{width:37px;height:37px;display:block;margin:0 auto 4px}.swatch input::-webkit-color-swatch-wrapper{padding:0}.swatch input::-webkit-color-swatch{border:2px solid #ffffff36;border-radius:9px}.swatch label{color:#bac5d8;font-size:9px;letter-spacing:0;font-weight:700}.swatch button{position:absolute;top:-7px;right:-7px;width:18px;height:18px;border-radius:99px;background:#283248;color:#ccd9eb;border:1px solid #586079;padding:0;line-height:15px}.palette-tools{display:flex;flex-wrap:wrap;gap:8px;margin-top:9px}
+.opacity-quick{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:10px}.opacity-quick button{border:1px solid #394b67;background:#161f34;color:#bfcce4;font-size:11px;font-weight:700;border-radius:8px;min-width:54px;padding:5px 8px;cursor:pointer}.opacity-quick button:hover{background:#2a3550}.opacity-quick button.active{background:#302549;border-color:#a18af0;color:#fff}.opacity-note{margin-top:9px;color:#93a4bc;font-size:11px;line-height:1.5}.control{margin-top:17px}.control-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;color:#c8d2e6;font-size:13px;font-weight:650}.control input[type=range]{height:8px}.control-minmax{display:flex;justify-content:space-between;color:#6f7e99;font-size:10px;margin-top:3px}.select{width:100%;border-radius:10px;color:#e4e9fb;background:#172034;border:1px solid #34405a;padding:11px 12px;outline:0}.toggle-row{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:9px 0;color:#c2cce2;font-size:13px}.toggle-row small{display:block;color:#8796b0;font-size:11px}.switch{appearance:none;width:38px;height:22px;border:1px solid #47516b;border-radius:22px;background:#2d374d;position:relative;cursor:pointer;flex:none;transition:background .18s}.switch:before{content:"";position:absolute;top:2px;left:2px;background:#b5bdce;width:16px;height:16px;border-radius:50%;transition:transform .18s}.switch:checked{background:#9e7bf2;border-color:#ac8fff}.switch:checked:before{transform:translateX(16px);background:#fff}
+.export{margin-top:18px}.export h3{font-size:16px;margin:0 0 5px}.export p{color:#919fbb;font-size:12px;margin:0 0 16px}.export-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.export-grid .btn{white-space:normal;min-height:45px}.export-options{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 13px}.export-options label{font-size:12px;color:#aebbd3}.export-options select{padding:7px 10px;max-width:160px;font-size:12px}
+.footer{text-align:center;margin-top:25px;font-size:11px;color:#626f89}.toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,15px);background:#e4ddff;color:#181429;border-radius:12px;padding:11px 18px;box-shadow:0 12px 50px #0007;font-weight:750;font-size:13px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:20;max-width:min(500px,90vw);text-align:center}.toast.show{opacity:1;transform:translate(-50%,0)}
+@media(max-width:1020px){.layout{grid-template-columns:1fr}.column{max-width:690px;width:100%;margin:auto}.preset-grid{grid-template-columns:repeat(4,1fr)}.stage{max-width:550px}}
+@media(max-width:620px){.shell{padding:17px 12px 40px}.header{align-items:flex-start;flex-direction:column}.brand h1{font-size:20px}.header-actions{width:100%;justify-content:flex-start}.header-actions .btn{flex:1}.panel{border-radius:16px}.panel-pad,.block-pad{padding:17px}.preview-head{padding:15px 14px 11px;align-items:flex-start;flex-direction:column}.preview-tabs{width:100%;display:flex}.preview-tab{flex:1}.stage-wrap{padding:0 10px}.player{padding:13px 12px}.preset-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.preset .preset-name{font-size:9px}.preview-hint{padding:0 4px;flex-direction:column;gap:5px}.export-grid{grid-template-columns:1fr 1fr}.library-row{grid-template-columns:1fr}.library-meta{flex-direction:column;align-items:flex-start}.library-actions .btn{flex:1}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
+
+.video-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-bottom:13px}.video-options label{display:block;font-size:12px;font-weight:700;color:#b8c4df;margin-bottom:5px}.video-wide{grid-column:span 2}.video-note{font-size:11px;line-height:1.55;color:#9faec7;background:#0c1222;border:1px solid #283650;border-radius:10px;padding:10px;margin:10px 0}.video-progress{font-size:12px;min-height:19px;color:#8ef5d7;margin:11px 0}.export-grid .btn-primary{grid-column:span 2}
+/* CSS gradient editor */
+.css-input{width:100%;min-height:85px;margin-top:12px;border:1px solid #415174;border-radius:11px;background:#0b1220;color:#d1f2ff;padding:12px;font:12px/1.7 ui-monospace,SFMono-Regular,Consolas,monospace;resize:vertical;outline:0;word-break:break-word}
+.css-input:focus{border-color:#a08dff;box-shadow:0 0 0 2px #a08dff32}
+.css-strip-wrap{border-radius:10px;border:1px solid #495473;padding:5px;margin-top:10px;background-color:#1c2637;background-image:linear-gradient(45deg,#2d3950 25%,transparent 25%),linear-gradient(-45deg,#2d3950 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#2d3950 75%),linear-gradient(-45deg,transparent 75%,#2d3950 75%);background-size:20px 20px}
+.css-strip{height:31px;border-radius:6px;background:linear-gradient(90deg,#60D9FF,#AA80FF,#FF93CA)}
+.css-status{font-size:11px;color:#a6b1c8;margin-top:7px;min-height:19px}.css-status.error{color:#ffadac}.css-status.active{color:#9bf7d0}
+/* Cutout workspace */
+.cutout-panel{border-color:#455177;background:linear-gradient(155deg,#1b2137,#111526 88%)}
+.cutout-heading{font-size:17px;font-weight:800;margin-top:4px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.cutout-heading .tag{background:#3a2c60;border-color:#8c74c5;color:#d8c8ff;font-size:10px}
+.cutout-buttons{display:grid;grid-template-columns:1fr auto;gap:9px;margin-top:16px}.cutout-buttons .btn:first-child{white-space:normal}
+.cutout-note{border:1px solid #394461;border-radius:10px;padding:9px 12px;color:#b7c9e4;background:#111c30;margin-top:11px;font-size:12px;line-height:1.55}
+.tool-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-top:12px}
+.tool-button{font:inherit;min-height:59px;border-radius:10px;border:1px solid #3b4763;background:#121b2d;color:#c1cde5;cursor:pointer;font-size:11px;font-weight:750;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:4px}
+.tool-button span{font-size:19px;line-height:1}.tool-button:hover{border-color:#b7a2ff}.tool-button.active{border-color:#bc96ff;background:#302448;color:#fff;box-shadow:0 0 0 1px #a57af355}
+.cutout-tools-bottom{display:flex;flex-wrap:wrap;gap:8px;margin-top:17px}.smaller{font-size:11px;color:#7f91ac}
+.brush-cursor{position:absolute;display:none;border:2px solid #f8f9ff;border-radius:50%;transform:translate(-50%,-50%);pointer-events:none;box-shadow:0 0 0 1px #090909,0 0 12px #0009;z-index:3}
+.stage.editing{cursor:crosshair}.stage.editing .stage-caption{background:#2c2048dd;color:#faf5ff}
+@media(max-width:620px){.preview-tab{padding:7px 6px;font-size:11px}.tool-grid{gap:5px}.tool-button{font-size:10px}.cutout-buttons{grid-template-columns:1fr auto}}
+
+/* v2.5: two independent sprite canvases, cutout zoom and selected side. */
+.dual-toggle-row{display:flex;justify-content:space-between;align-items:center;gap:18px;margin:0 20px 14px;padding:12px 14px;background:#0e1526;border:1px solid #303b55;border-radius:12px}
+.dual-toggle-row strong{display:block;font-size:13px;color:#ece8ff}.dual-toggle-row span{display:block;font-size:11px;color:#96a7c3;margin-top:2px}
+.dual-switch-label{display:flex;align-items:center;gap:8px;font-weight:700;white-space:nowrap;font-size:12px;cursor:pointer}.dual-switch-label input{width:17px;height:17px;accent-color:#a88aff;cursor:pointer}.dual-switch-label span{font-size:12px;color:#e2d6ff;margin:0}
+.display-grid{display:grid;grid-template-columns:1fr;gap:11px;padding:0 19px;align-items:start}.display-grid.dual{grid-template-columns:repeat(2,minmax(0,1fr))}.display-grid:not(.dual) #backTile{display:none}
+.display-tile{min-width:0;padding:8px;border:1px solid #37425b;border-radius:16px;background:#101729;transition:border-color .16s,box-shadow .16s}.display-tile.active{border-color:#b48bff;box-shadow:0 0 0 1px #a47cef88}.display-tile-head{display:flex;align-items:center;gap:7px;min-width:0;padding-bottom:8px}
+.slot-selector{background:none;border:0;color:#aaaac6;text-align:left;cursor:pointer;padding:4px 2px;min-width:0;flex:1;font-weight:850;font-size:11px}.slot-selector span{display:block;color:#9aa9c6;font-weight:500;max-width:100%;white-space:nowrap;text-overflow:ellipsis;overflow:hidden}.display-tile.active .slot-selector{color:#d6aaff}.display-tile.active .slot-selector span{color:#e4edff}
+.display-tile-head .btn{min-height:28px;padding:3px 7px;font-size:10px}.zoom-reset{min-width:45px;border:1px solid #384661;background:#1b253b;color:#bbd2e9;border-radius:7px;padding:6px 3px;font-size:10px;cursor:pointer}
+.display-tile .stage{max-width:unset;aspect-ratio:1;border-radius:11px}.display-tile .stage canvas{image-rendering:pixelated}.display-grid.dual .stage-caption{font-size:9px;padding:4px 6px;bottom:7px;left:7px}
+.zoom-help{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 22px 12px;font-size:11px;color:#8e9cb6}.zoom-help #editingSideTag{white-space:nowrap;color:#e7ceff;font-weight:800}
+@media(max-width:650px){.display-grid.dual{grid-template-columns:1fr}.dual-toggle-row{margin:0 10px 11px}.display-grid{padding:0 10px}.zoom-help{flex-wrap:wrap}.display-tile .stage{max-width:550px}}
+</style>
+</head>
+<body>
+<div class="shell">
+<header class="header">
+  <div class="brand"><div class="brand-mark">✦</div><div><h1>SPECTRA</h1><small>Loop Lab v2.5 · Dual sprite cutout</small></div></div>
+  <div class="header-actions"><button class="btn btn-ghost" id="randomizeBtn" title="Generate a random palette (R)">⚄ &nbsp; Surprise me</button><button class="btn btn-ghost" id="demoBtn">✧ &nbsp; Demo sprite</button><button class="btn btn-primary" id="uploadBtn">↑ &nbsp; Upload sprite</button></div>
+</header>
+<main class="layout">
+<div class="column">
+<section class="panel" aria-label="Animated sprite preview">
+  <div class="preview-head"><div><div class="eyebrow">Live preview <span class="live-dot" style="margin-left:7px"></span></div><div class="asset-name" id="spriteName" title="Demo sprite">Starlit • demo creature</div></div><div class="preview-tabs" role="tablist" aria-label="Preview mode"><button class="preview-tab active" data-view="effect">Gradient</button><button class="preview-tab" data-view="cutout">Cutout</button><button class="preview-tab" data-view="original">Uploaded</button><button class="preview-tab" data-view="compare">Compare</button></div></div>
+  <div class="dual-toggle-row"><div><strong>Front + Back sprites</strong><span>Enable two independent sprite displays. Click a display to select it for editing and export.</span></div><label class="dual-switch-label"><input type="checkbox" id="dualViewToggle" aria-label="Enable two sprite displays"><span>Show both</span></label></div>
+  <div class="display-grid" id="displayGrid">
+   <div class="display-tile active" id="frontTile" data-side="front">
+    <div class="display-tile-head"><button class="slot-selector" id="frontSelectBtn">● FRONT <span id="frontName">Starlit • demo creature</span></button><button class="btn btn-small" id="frontUploadBtn">↑ Upload</button><button class="zoom-reset" id="frontZoomReset" title="Reset front zoom to 100%">100%</button></div>
+    <div class="stage" id="stage" data-side="front"><canvas id="previewCanvas" width="512" height="512" aria-label="Front sprite animated preview" role="img"></canvas><div id="splitLine" class="split-line"></div><div id="brushCursor" class="brush-cursor" aria-hidden="true"></div><div class="stage-caption" id="stageCaption">128 × 128 · Front</div><div class="drag-layer">Drop front sprite here ✦</div></div>
+   </div>
+   <div class="display-tile" id="backTile" data-side="back">
+    <div class="display-tile-head"><button class="slot-selector" id="backSelectBtn">● BACK <span id="backName">Upload a back sprite</span></button><button class="btn btn-small" id="backUploadBtn">↑ Upload</button><button class="zoom-reset" id="backZoomReset" title="Reset back zoom to 100%">100%</button></div>
+    <div class="stage" id="backStage" data-side="back"><canvas id="backPreviewCanvas" width="512" height="512" aria-label="Back sprite animated preview" role="img"></canvas><div id="backSplitLine" class="split-line"></div><div id="backBrushCursor" class="brush-cursor" aria-hidden="true"></div><div class="stage-caption" id="backStageCaption">128 × 128 · Back</div><div class="drag-layer">Drop back sprite here ✦</div></div>
+   </div>
+  </div>
+  <div class="zoom-help"><span>🔎 Scroll to zoom (1×–16×) · Right-drag to pan · Cutout → Erase / Restore for pixel cleanup.</span><span id="editingSideTag">Editing: Front</span></div>
+  <div class="player"><button class="play" id="playBtn" aria-label="Pause animation" title="Play/pause (space)">Ⅱ</button><div class="timeline"><input id="timeline" type="range" min="0" max="1000" value="0" aria-label="Animation position"/><div class="time-row"><span id="timeText">00:00</span><span id="durationText">5.0s seamless loop</span></div></div><span class="tag" id="animTypeTag">LINEAR</span></div>
+  <div class="info-line"><span id="spriteDimensions">PNG / WEBP • 128 × 128</span><span><span class="live-dot"></span><span id="statusText">Live rendering</span></span></div>
+</section>
+<div class="preview-hint"><span>✦ Drop a sprite or screenshot. Remove the background before applying gradients.</span><span>Space: pause · R: randomize</span></div>
+<section class="panel library-panel" aria-label="Saved sprite library"><div class="panel-pad">
+ <div class="section-head"><div><div class="section-title">Saved sprites</div><h3 style="margin:4px 0 0;font-size:16px">Sprite Library</h3></div><span class="tag" id="savedSpriteCount">0 saved</span></div>
+ <div class="help-text">Every uploaded sprite is saved in the app. Select Front or Back, then choose a saved Pokémon for that display.</div>
+ <div class="library-row">
+  <button class="btn btn-small" id="prevSpriteBtn">← Prev</button>
+  <select id="savedSpriteSelect" class="select" aria-label="Saved sprites"></select>
+  <button class="btn btn-small" id="nextSpriteBtn">Next →</button>
+ </div>
+ <div class="library-meta"><span class="library-count" id="libraryMeta">No saved sprites yet</span><span id="libraryStatus">New uploads save automatically.</span></div>
+ <div class="library-actions">
+  <button class="btn btn-primary btn-small" id="saveSpriteBtn">💾 Save / update current sprite</button>
+  <button class="btn btn-small" id="renameSpriteBtn">✎ Rename current</button>
+  <button class="btn btn-small" id="deleteSpriteBtn">🗑 Delete current</button>
+ </div>
+</div></section>
+<section class="panel export" aria-label="Video export"><div class="panel-pad">
+ <div class="section-head"><div><div class="section-title">04 / Seamless video loops</div><h3>Record your sprite as video</h3></div><span class="tag">NO GIF COLOR LIMIT</span></div>
+ <p>Record the currently selected Front or Back sprite from its 128 × 128 gradient renderer. Each loop repeats without a jump, with crisp pixels and no GIF palette reduction.</p>
+ <div class="video-options">
+  <div><label for="videoFormat">Format</label><select id="videoFormat" class="select"><option value="webm">WebM · recommended</option><option value="mp4">MP4 · if supported</option></select></div>
+  <div><label for="videoFps">Frame rate</label><select id="videoFps" class="select"><option value="24">24 FPS</option><option value="30" selected>30 FPS</option><option value="60">60 FPS</option></select></div>
+  <div><label for="videoResolution">Size</label><select id="videoResolution" class="select"><option value="128" selected>128 × 128 original</option><option value="512">512 × 512 pixel upscale</option></select></div>
+  <div><label for="videoCycles">Repeat cycles in file</label><select id="videoCycles" class="select"><option value="1" selected>1 seamless cycle</option><option value="2">2 cycles</option><option value="3">3 cycles</option></select></div>
+  <div class="video-wide"><label for="videoBg">Video background</label><select id="videoBg" class="select"><option value="transparent">Transparent (WebM · player-dependent)</option><option value="black">Solid black · compatible</option><option value="white">Solid white</option><option value="green">Chroma green · easy keying</option></select></div>
+ </div>
+ <div class="video-note" id="videoNote">One natural cycle lasts 5.0 seconds at the selected animation speed. WebM transparency depends on video codec and player; green screen is the reliable alternative.</div>
+ <div class="video-progress" id="videoProgress" aria-live="polite">Ready to export video</div>
+ <div class="export-grid"><button id="videoBtn" class="btn btn-primary">◉ &nbsp; Export looping video</button><button id="cancelVideoBtn" class="btn" style="display:none">✕ &nbsp; Cancel export</button><button id="configBtn" class="btn">{ } &nbsp; Save settings JSON</button></div>
+ <video id="videoPreview" controls loop playsinline muted style="display:none;margin-top:13px;width:100%;max-height:300px;background:repeating-conic-gradient(#27354a 0% 25%,#172031 0% 50%) 50%/28px 28px;image-rendering:pixelated;border:1px solid #3f4b64;border-radius:12px" aria-label="Playback of exported looping video"></video>
+ </div></section>
+</div>
+<div class="column">
+<section class="panel cutout-panel"><div class="block-pad">
+  <div class="section-head"><div><div class="section-title">00 / Sprite extraction</div><div class="cutout-heading">Remove the background <span class="tag">NEW</span></div></div><span id="maskBadge" class="tag">Transparent pixels: 0%</span></div>
+  <div class="help-text">Your gradient is clipped to the extracted sprite's exact visible pixels. The background never gets colored or exported.</div>
+  <div class="cutout-buttons"><button class="btn btn-primary" id="autoCutoutBtn">✦ Auto-remove background</button><button class="btn" id="undoMaskBtn" title="Undo last mask edit (Ctrl+Z)">↶ Undo</button></div>
+  <div class="cutout-note" id="cutoutStatus">Upload an image with a background, then try Auto-remove.</div>
+  <div class="control"><div class="control-head"><label for="tolerance">Background color tolerance</label><span class="value-label" id="toleranceVal">28</span></div><input type="range" id="tolerance" min="0" max="120" step="1" value="28"><div class="control-minmax"><span>Exact color</span><span>Remove similar colors</span></div></div>
+  <div class="section-title" style="margin-top:19px">Refine your cutout</div><div class="help-text">Choose a tool, then work directly on the <b>Cutout</b> preview. All edits are pixel-perfect at 128 × 128.</div>
+  <div class="tool-grid" id="toolGrid">
+    <button class="tool-button active" data-tool="wand"><span>◈</span> Color wand</button>
+    <button class="tool-button" data-tool="erase"><span>▧</span> Erase</button>
+    <button class="tool-button" data-tool="restore"><span>✎</span> Restore</button>
+    <button class="tool-button" data-tool="lasso"><span>⬡</span> Outline</button>
+  </div>
+  <div class="control"><div class="control-head"><label for="brushSize">Brush size</label><span class="value-label" id="brushSizeVal">4 px</span></div><input type="range" id="brushSize" min="1" max="25" step="1" value="4"/></div>
+  <div class="cutout-tools-bottom"><button class="btn btn-small" id="resetCutoutBtn">↺ Restore full image</button><button class="btn btn-small" id="fitSpriteBtn" title="Center the isolated sprite and scale it to fit a 128 × 128 canvas">⊞ Fit sprite to canvas</button></div>
+  <div class="help-text smaller">For solid colors, Auto-remove is fastest. For detailed backgrounds, use Outline to trace around the Pokémon, then Erase/Restore to perfect the edges. Color wand removes connected regions matching the clicked color.</div>
+</div></section>
+<section class="panel right-gap"><div class="block-pad">
+  <div class="section-head"><div><div class="section-title">01 / Colors</div><div style="font-weight:750;font-size:17px;margin-top:3px">Choose your gradient colors</div></div><button class="btn btn-small" id="resetBtn" title="Reset all effect settings">↺ Reset</button></div>
+  <div class="preset-grid" id="presetGrid"></div>
+  <div class="divider"></div>
+  <div class="section-head"><div class="section-title">CSS gradient editor</div><span id="cssModeTag" class="tag">PALETTE MODE</span></div>
+  <div class="help-text">Paste <code>linear-gradient(...)</code> or full CSS like <code>background: linear-gradient(...);</code>. CSS from gradient-generator websites works too. Colors and percentage stops stay inside the sprite cutout.</div>
+  <textarea class="css-input" id="cssInput" spellcheck="false" aria-label="CSS linear gradient code">linear-gradient(90deg, #60D9FF 0%, #AA80FF 50%, #FF93CA 100%)</textarea>
+  <div class="css-strip-wrap"><div id="cssStrip" class="css-strip"></div></div>
+  <div id="cssStatus" class="css-status" role="status" aria-live="polite">Paste CSS, then select Apply CSS gradient.</div>
+  <div class="palette-tools"><button class="btn btn-small btn-primary" id="applyCssBtn">✓ Apply CSS gradient</button><button class="btn btn-small" id="copyCssBtn">⧉ Copy CSS</button><button class="btn btn-small" id="paletteModeBtn">↶ Palette mode</button></div>
+  <div class="divider"></div>
+  <div class="section-head"><div class="section-title">Your color palette</div><span class="value-label" id="paletteCount">4 colors</span></div>
+  <div class="swatches" id="swatches"></div><div id="cssPaletteHint" class="help-text" style="display:none">CSS stops are active. Editing these swatches or picking a preset switches to regular palette mode.</div>
+  <div class="palette-tools"><button class="btn btn-small" id="addColorBtn">＋ Add color</button><button class="btn btn-small" id="reverseColorsBtn">⇄ Reverse colors</button></div>
+  <div class="divider"></div>
+  <div class="section-title">02 / Straight-line movement</div><div class="help-text">One clean linear gradient moves across your sprite. Adjust its angle, speed, and the visibility of the sprite itself.</div>
+  <div class="control"><div class="control-head"><label for="intensity">Gradient opacity</label><span class="value-label" id="intensityVal">50%</span></div><input id="intensity" type="range" min="0" max="100" step="1" value="50"/><div class="control-minmax"><span>0% = original sprite</span><span>100% = full gradient</span></div>
+  <div class="opacity-quick" id="opacityQuick" aria-label="Quick gradient opacity settings"><span class="help-text" style="margin:0 5px 0 0">Quick set:</span><button type="button" data-opacity="0">Off</button><button type="button" data-opacity="15">15%</button><button type="button" data-opacity="30">30%</button><button type="button" data-opacity="50">50%</button><button type="button" data-opacity="100">100%</button></div>
+  <div class="opacity-note" id="opacityDescription">Tint leaves the sprite's original highlights and shadows visible. Opacity never changes the sprite's background transparency.</div>
+  </div>
+  
+  <div class="control"><div class="control-head"><label for="speed">Animation speed</label><span class="value-label" id="speedVal">1.0×</span></div><input id="speed" type="range" min="0.2" max="3" step="0.1" value="1"/><div class="control-minmax"><span>Slow</span><span>Fast</span></div></div>
+  <div class="control"><div class="control-head"><label for="scale">Color spacing</label><span class="value-label" id="scaleVal">1.0×</span></div><input id="scale" type="range" min="0.3" max="2.5" step="0.1" value="1.0"/><div class="control-minmax"><span>Broad transitions</span><span>More color bands</span></div></div>
+  <div class="control"><div class="control-head"><label for="angle">Travel angle</label><span class="value-label" id="angleVal">0°</span></div><input id="angle" type="range" min="0" max="360" step="1" value="0"/><div class="control-minmax"><span>0° = right → · 90° = down ↓</span><span>360° = right →</span></div></div>
+  <div class="palette-tools" style="margin-top:18px"><button class="btn btn-small" id="reverseMotionBtn">⇄ Reverse movement</button></div>
+  <div class="control" id="prismControl"><div class="control-head"><label for="spriteTransparency">Prism Effect</label><span class="value-label" id="spriteTransparencyVal">0%</span></div><input id="spriteTransparency" aria-label="Prism Effect" type="range" min="0" max="100" step="1" value="0"><div class="control-minmax"><span>0% = fully visible</span><span>100% = fully faded</span></div><div class="help-text">Fade the sprite itself to create a translucent prism look. Only the sprite pixels are affected; the background stays transparent.</div></div>
+</div></section>
+</div>
+</main>
+<div class="footer">SPECTRA LOOP LAB · 100% offline · Ctrl+O to open a sprite · Saved sprite library, video export, and transparent sprite masking.</div>
+</div>
+<input type="file" id="fileInput" accept="image/png,image/webp,image/gif,image/jpeg,image/bmp" hidden />
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<script>
+'use strict';
+const SIZE=128, TAU=Math.PI*2;
+const $=id=>document.getElementById(id);
+const presets=[
+ {name:'Aurora',colors:['#62D8FF','#A477FF','#F09CDA']},
+ {name:'Sunset',colors:['#FF5D69','#FFB15D','#FFE29A']},
+ {name:'Toxic',colors:['#37EDAC','#D1F664','#3AC5CE']},
+ {name:'Ocean',colors:['#3477DC','#52D6F7','#32CDB9']},
+ {name:'Candy',colors:['#F486D8','#94AAFF','#AAEDFA']},
+ {name:'Spectrum',colors:['#FF416D','#FFD341','#68F766','#4ACBFF','#A45EFF']},
+ {name:'Royal',colors:['#F7D880','#9766EC','#D8C0FF']},
+ {name:'Ghost',colors:['#6BE8FF','#AE8AFF','#E8F5FF']}
+];
+const defaults={preset:'Aurora',palette:[...presets[0].colors],cssStops:null,intensity:50,speed:1,scale:1,angle:0,direction:1,playing:true,view:'effect',split:.5,spriteTransparency:0};
+let state={...defaults,palette:[...defaults.palette]},paletteRGB=[],phase=0,sourceImageData=null,spriteBaseName='starlit-demo',toastTimer,drawPending=true,exporting=false;
+const LIBRARY_KEY='spectraSpriteLibrary.v22',LIBRARY_LAST_KEY='spectraSpriteLibrary.last.v22',LIBRARY_LIMIT=40;
+let spriteLibrary=[],currentSpriteId=null,saveSpriteTimer=0,loadingSavedSprite=false;
+const sourceCanvas=document.createElement('canvas');sourceCanvas.width=sourceCanvas.height=SIZE;
+const sourceCtx=sourceCanvas.getContext('2d',{willReadFrequently:true});sourceCtx.imageSmoothingEnabled=false;
+const rawCanvas=document.createElement('canvas');rawCanvas.width=rawCanvas.height=SIZE;
+const rawCtx=rawCanvas.getContext('2d',{willReadFrequently:true});rawCtx.imageSmoothingEnabled=false;
+let rawImageData=null,alphaMask=new Uint8ClampedArray(SIZE*SIZE).fill(255),undoMasks=[],currentTool='wand',brushSize=4,removingBg=false,pointerPainting=false,lassoPoints=[],lastBrushPoint=null;
+const PREVIEW_SIZE=512;
+const fxCanvas=document.createElement('canvas');fxCanvas.width=fxCanvas.height=SIZE;
+const fxCtx=fxCanvas.getContext('2d',{willReadFrequently:true});
+const frame=fxCtx.createImageData(SIZE,SIZE),previewCanvas=$('previewCanvas'),previewCtx=previewCanvas.getContext('2d');previewCtx.imageSmoothingEnabled=false;
+const backPreviewCanvas=$('backPreviewCanvas'),backPreviewCtx=backPreviewCanvas.getContext('2d');backPreviewCtx.imageSmoothingEnabled=false;
+const SIDE_STORE='spectra.spriteSides.v24',DUAL_STORE='spectra.dual.v24';
+let activeSide='front',dualEnabled=false;
+function newSlot(side){const raw=document.createElement('canvas'),source=document.createElement('canvas'),fx=document.createElement('canvas');for(const c of [raw,source,fx])c.width=c.height=SIZE;
+ const rCtx=raw.getContext('2d',{willReadFrequently:true}),sCtx=source.getContext('2d',{willReadFrequently:true}),fCtx=fx.getContext('2d',{willReadFrequently:true});
+ return {side,name:side==='front'?'Starlit • demo creature':'Back sprite • empty',baseName:side+'-sprite',dims:'128 × 128',caption:'128 × 128 · '+side,rawCanvas:raw,sourceCanvas:source,fxCanvas:fx,rawCtx:rCtx,sourceCtx:sCtx,fxCtx:fCtx,fxFrame:fCtx.createImageData(SIZE,SIZE),rawImageData:rCtx.createImageData(SIZE,SIZE),sourceImageData:sCtx.createImageData(SIZE,SIZE),alphaMask:new Uint8ClampedArray(SIZE*SIZE).fill(255),undoMasks:[],id:null,zoom:1,offX:0,offY:0};
+}
+const slots={front:newSlot('front'),back:newSlot('back')};
+function activeSlot(){return slots[activeSide];}
+function persistSides(){if(!storageAvailable())return;try{localStorage.setItem(SIDE_STORE,JSON.stringify({front:slots.front.id,back:slots.back.id}));localStorage.setItem(DUAL_STORE,dualEnabled?'1':'0');}catch(e){}}
+function syncSlotFromEditor(){const s=activeSlot();s.rawImageData=rawImageData;s.sourceImageData=sourceImageData;s.alphaMask=alphaMask;s.undoMasks=undoMasks;s.id=currentSpriteId;s.baseName=spriteBaseName;s.name=$('spriteName').textContent;s.dims=$('spriteDimensions').textContent;s.caption=$('stageCaption').textContent;if(rawImageData)s.rawCtx.putImageData(rawImageData,0,0);if(sourceImageData)s.sourceCtx.putImageData(sourceImageData,0,0);}
+function applySlotToEditor(s){rawImageData=s.rawImageData;sourceImageData=s.sourceImageData;alphaMask=s.alphaMask;undoMasks=s.undoMasks;currentSpriteId=s.id;spriteBaseName=s.baseName;rawCtx.putImageData(s.rawImageData,0,0);sourceCtx.putImageData(s.sourceImageData,0,0);$('spriteName').textContent=s.name;$('spriteName').title=s.name;$('spriteDimensions').textContent=s.dims;$('stageCaption').textContent=s.caption;}
+function activateSide(side){if(side!=='front'&&side!=='back')return;if(side==='back'&&!dualEnabled)return;
+ if(activeSide!==side){clearTimeout(saveSpriteTimer);saveSpriteTimer=0;if(currentSpriteId)upsertCurrentSprite(null,false);syncSlotFromEditor();activeSide=side;applySlotToEditor(slots[side]);stage=$(side==='front'?'stage':'backStage');setCutoutStatus('Editing '+side+' sprite. Scroll over the sprite to zoom, then use Erase / Restore.');}
+ updateSideUI();refreshLibraryUI();updateMaskBadge();drawPending=true;draw();persistSides();}
+function updateSideUI(){const s=activeSlot();$('displayGrid').classList.toggle('dual',dualEnabled);$('dualViewToggle').checked=dualEnabled;
+ for(const side of ['front','back']){$(side+'Tile').classList.toggle('active',side===activeSide);$(side+'Name').textContent=slots[side].name;$(side+'ZoomReset').textContent=Math.round(slots[side].zoom*100)+'%';}
+ $('editingSideTag').textContent='Editing / Export: '+(activeSide==='front'?'Front':'Back');$('videoBtn').setAttribute('aria-label','Export '+activeSide+' sprite as looping video');}
+function setDual(enabled){dualEnabled=!!enabled;if(!dualEnabled&&activeSide==='back')activateSideForceFront();updateSideUI();persistSides();drawPending=true;draw();}
+function activateSideForceFront(){clearTimeout(saveSpriteTimer);saveSpriteTimer=0;if(currentSpriteId)upsertCurrentSprite(null,false);syncSlotFromEditor();activeSide='front';applySlotToEditor(slots.front);stage=$('stage');refreshLibraryUI();updateMaskBadge();}
+function zoomSlot(side,deltaY,cx,cy){const s=slots[side],old=s.zoom,factor=deltaY<0?1.28:1/1.28,z=Math.max(1,Math.min(16,old*factor));
+ s.offX=Math.min(0,Math.max(512*(1-z),cx-(cx-s.offX)*z/old));s.offY=Math.min(0,Math.max(512*(1-z),cy-(cy-s.offY)*z/old));s.zoom=z;updateSideUI();drawPending=true;draw();}
+function resetZoom(side){const s=slots[side];s.zoom=1;s.offX=s.offY=0;updateSideUI();drawPending=true;draw();}
+
+const clamp=(n,min=0,max=255)=>Math.max(min,Math.min(max,n));
+const fraction=x=>x-Math.floor(x);
+function hexToRgb(hex){const x=parseInt(hex.slice(1),16);return[(x>>16)&255,(x>>8)&255,x&255];}
+function rgbToHex(r,g,b){return '#'+[r,g,b].map(v=>Math.round(v).toString(16).padStart(2,'0')).join('').toUpperCase();}
+function hslToHex(h,s,l){s/=100;l/=100;const a=s*Math.min(l,1-l),f=n=>{const k=(n+h/30)%12;return 255*(l-a*Math.max(-1,Math.min(k-3,9-k,1)));};return rgbToHex(f(0),f(8),f(4));}
+function notify(message){const t=$('toast');t.textContent=message;t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),3100);}
+function storageAvailable(){try{const k='__spectra_test__';localStorage.setItem(k,'1');localStorage.removeItem(k);return true;}catch(e){return false;}}
+function slugifyName(name){return String(name||'pokemon-sprite').replace(/\.[^.]+$/,'').replace(/[^a-z0-9_-]+/gi,'-').replace(/^-+|-+$/g,'').toLowerCase()||'pokemon-sprite';}
+function safeJsonParse(text,fallback){try{return JSON.parse(text);}catch(e){return fallback;}}
+function persistLibrary(){if(!storageAvailable())return false;try{localStorage.setItem(LIBRARY_KEY,JSON.stringify(spriteLibrary.slice(0,LIBRARY_LIMIT)));if(currentSpriteId)localStorage.setItem(LIBRARY_LAST_KEY,currentSpriteId);return true;}catch(e){notify('Sprite library storage is full. Delete a few saved sprites and try again.');return false;}}
+function loadLibrary(){if(!storageAvailable()){spriteLibrary=[];refreshLibraryUI();return;}const data=safeJsonParse(localStorage.getItem(LIBRARY_KEY)||'[]',[]);spriteLibrary=Array.isArray(data)?data.filter(item=>item&&typeof item.dataUrl==='string'):[];refreshLibraryUI();}
+function refreshLibraryUI(){const select=$('savedSpriteSelect');select.innerHTML='';if(!spriteLibrary.length){const option=document.createElement('option');option.textContent='No saved sprites yet';option.value='';select.append(option);select.disabled=true;$('savedSpriteCount').textContent='0 saved';$('libraryMeta').textContent='No saved sprites yet';$('libraryMeta').classList.add('library-empty');$('libraryStatus').textContent=storageAvailable()?'Upload a sprite to save it here.':'Browser storage is unavailable in this window.';$('prevSpriteBtn').disabled=true;$('nextSpriteBtn').disabled=true;$('renameSpriteBtn').disabled=true;$('deleteSpriteBtn').disabled=true;return;}spriteLibrary.forEach((item,index)=>{const option=document.createElement('option');option.value=item.id;option.textContent=`${index+1}. ${item.name||'Untitled sprite'}`;if(item.id===currentSpriteId)option.selected=true;select.append(option);});select.disabled=false;$('savedSpriteCount').textContent=`${spriteLibrary.length} saved`;$('libraryMeta').classList.remove('library-empty');$('libraryMeta').textContent=spriteLibrary.length===1?'1 saved sprite in your local library':`${spriteLibrary.length} saved sprites in your local library`;$('libraryStatus').textContent='New uploads save automatically. Use Save / update to store cutout edits.';$('prevSpriteBtn').disabled=spriteLibrary.length<2;$('nextSpriteBtn').disabled=spriteLibrary.length<2;$('renameSpriteBtn').disabled=!currentSpriteId;$('deleteSpriteBtn').disabled=!currentSpriteId;if(!currentSpriteId&&spriteLibrary[0])select.value=spriteLibrary[0].id;}
+function findSpriteIndex(id){return spriteLibrary.findIndex(item=>item.id===id);}
+function currentSpriteDataUrl(){if(!sourceImageData)return null;return sourceCanvas.toDataURL('image/png');}
+function upsertCurrentSprite(nameOverride,announce=false){const dataUrl=currentSpriteDataUrl();if(!dataUrl)return false;const name=(nameOverride||$('spriteName').textContent||'Pokemon Sprite').trim();const baseName=slugifyName(name);let index=findSpriteIndex(currentSpriteId);const entry={id:currentSpriteId||('sprite-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,8)),name,dataUrl,baseName,updatedAt:Date.now()};if(index>=0){spriteLibrary.splice(index,1);}currentSpriteId=entry.id;activeSlot().id=entry.id;spriteLibrary.unshift(entry);if(spriteLibrary.length>LIBRARY_LIMIT)spriteLibrary.length=LIBRARY_LIMIT;persistLibrary();persistSides();refreshLibraryUI();$('savedSpriteSelect').value=currentSpriteId;spriteBaseName=baseName;if(announce)notify(index>=0?'Saved changes to current sprite ✦':'Sprite saved to library ✦');return true;}
+function queueSpriteSave(){if(loadingSavedSprite||!currentSpriteId)return;clearTimeout(saveSpriteTimer);saveSpriteTimer=setTimeout(()=>upsertCurrentSprite(null,false),350);}
+function loadSavedSprite(id,announce=true,side=activeSide){const entry=spriteLibrary.find(item=>item.id===id);if(!entry){notify('That saved sprite could not be found');refreshLibraryUI();return;}loadingSavedSprite=true;const img=new Image();img.onload=()=>{if(side!==activeSide)activateSide(side);rawCtx.clearRect(0,0,SIZE,SIZE);rawCtx.imageSmoothingEnabled=false;rawCtx.drawImage(img,0,0,SIZE,SIZE);rawImageData=rawCtx.getImageData(0,0,SIZE,SIZE);alphaMask.fill(255);undoMasks=[];currentSpriteId=entry.id;activeSlot().id=entry.id;spriteBaseName=entry.baseName||slugifyName(entry.name);$('spriteName').textContent=entry.name;$('spriteName').title=entry.name;$('spriteDimensions').textContent='Saved sprite • 128 × 128';$('stageCaption').textContent='128 × 128 · library sprite';syncSourceFromMask();state.view='effect';setCutoutStatus('Loaded a saved sprite from your local library.');refreshAll();refreshLibraryUI();persistSides();loadingSavedSprite=false;if(announce)notify('Saved sprite loaded ✦');};img.onerror=()=>{loadingSavedSprite=false;notify('Could not load that saved sprite.');};img.src=entry.dataUrl;}
+function cycleSavedSprite(step){if(!spriteLibrary.length)return;const current=findSpriteIndex(currentSpriteId);const start=current>=0?current:0;const next=(start+step+spriteLibrary.length)%spriteLibrary.length;loadSavedSprite(spriteLibrary[next].id,true);}
+function deleteCurrentSprite(){if(!currentSpriteId){notify('No saved sprite selected');return;}const index=findSpriteIndex(currentSpriteId);if(index<0){notify('No saved sprite selected');return;}const removed=spriteLibrary.splice(index,1)[0];currentSpriteId=null;activeSlot().id=null;persistLibrary();persistSides();refreshLibraryUI();if(spriteLibrary.length){loadSavedSprite(spriteLibrary[Math.min(index,spriteLibrary.length-1)].id,false);}else{drawDemo();setCutoutStatus('Library sprite deleted. Demo sprite loaded.');refreshAll();}notify(`Deleted ${removed.name||'sprite'} from your library`);}
+function renameCurrentSprite(){if(!currentSpriteId){notify('No saved sprite selected');return;}const idx=findSpriteIndex(currentSpriteId);if(idx<0)return;const current=spriteLibrary[idx];const next=prompt('Rename this saved sprite:',current.name||'Pokemon Sprite');if(next===null)return;const clean=next.trim();if(!clean){notify('Enter a name to rename the sprite');return;}current.name=clean;current.baseName=slugifyName(clean);current.updatedAt=Date.now();spriteLibrary.splice(idx,1);spriteLibrary.unshift(current);persistLibrary();persistSides();refreshLibraryUI();$('savedSpriteSelect').value=current.id;$('spriteName').textContent=clean;$('spriteName').title=clean;spriteBaseName=current.baseName;notify('Saved sprite renamed ✦');}
+function refreshPaletteRGB(){paletteRGB=state.palette.map(hexToRgb);}
+// Interpret common real-world CSS linear-gradient() syntax, including arbitrary
+// percentage color-stop locations and CSS color functions. CSS colors are resolved
+// by the browser, while the canvas rendering applies the cleaned sprite alpha mask.
+const colorParserCanvas=document.createElement('canvas');colorParserCanvas.width=colorParserCanvas.height=1;
+const colorParserCtx=colorParserCanvas.getContext('2d',{willReadFrequently:true});
+function splitCssArguments(s){const out=[];let depth=0,quote='',start=0;for(let i=0;i<s.length;i++){const ch=s[i];if(quote){if(ch===quote&&s[i-1]!=='\\')quote='';continue;}if(ch==='"'||ch==="'"){quote=ch;continue;}if(ch==='(')depth++;if(ch===')')depth--;if(depth<0)throw new Error('Unbalanced parentheses');if(ch===','&&depth===0){out.push(s.slice(start,i).trim());start=i+1;}}if(depth||quote)throw new Error('Unbalanced CSS syntax');out.push(s.slice(start).trim());return out;}
+function getCssColor(value){if(!CSS.supports('color',value))throw new Error('Unsupported CSS color: '+value);colorParserCtx.clearRect(0,0,1,1);colorParserCtx.fillStyle=value;colorParserCtx.fillRect(0,0,1,1);const c=colorParserCtx.getImageData(0,0,1,1).data;return[c[0],c[1],c[2],c[3]/255];}
+function cssAngleToTravel(part){let p=part.trim().toLowerCase().replace(/\s+/g,' '),angle;
+ if(p.startsWith('to ')){let w=p.slice(3).split(' '),valid=['left','right','top','bottom'];if(w.length>2||w.some(x=>!valid.includes(x))||w.includes('left')&&w.includes('right')||w.includes('top')&&w.includes('bottom'))throw new Error('Unsupported CSS gradient direction');let x=(w.includes('right')?1:0)-(w.includes('left')?1:0),y=(w.includes('bottom')?1:0)-(w.includes('top')?1:0);angle=Math.atan2(y,x)*180/Math.PI;}
+ else{let m=p.match(/^([+-]?(?:\d+(?:\.\d+)?|\.\d+))(deg|turn|rad|grad)$/);if(!m)return null;let v=parseFloat(m[1]);const cssDegrees=v*({deg:1,turn:360,rad:180/Math.PI,grad:.9})[m[2]];angle=cssDegrees-90;}
+ return (angle%360+360)%360;
+}
+// CSS gradient generators commonly copy a whole property (background: ...;),
+// a block of CSS declarations, or HTML's style attribute. Extract the nested
+// gradient function rather than requiring the ENTIRE pasted text to equal it.
+function extractLinearGradient(input){
+ const src=String(input).replace(/\/\*[\s\S]*?\*\//g,' ');
+ // Do not accidentally accept repeating-linear-gradient or other functions.
+ const pattern=/(?:^|[^a-z0-9_-])((?:-(?:webkit|moz|o)-)?linear-gradient)\s*\(/gi;
+ const matches=[...src.matchAll(pattern)];
+ if(!matches.length)throw new Error('No linear-gradient(...) found. Paste the gradient itself or CSS such as background: linear-gradient(90deg, red, blue);');
+ // Prefer the final standard declaration when CSS includes prefixed fallbacks.
+ const standard=matches.filter(m=>m[1].toLowerCase()==='linear-gradient');
+ const match=(standard.length?standard:matches).at(-1);
+ let start=match.index+match[0].lastIndexOf(match[1]);
+ const open=src.indexOf('(',start+match[1].length);
+ let depth=0,quote='',end=-1;
+ for(let i=open;i<src.length;i++){
+  const c=src[i];
+  if(quote){if(c===quote&&src[i-1]!=='\\')quote='';continue;}
+  if(c==='"'||c==="'"){quote=c;continue;}
+  if(c==='(')depth++;
+  if(c===')'&&--depth===0){end=i+1;break;}
+ }
+ if(end<0)throw new Error('The linear-gradient(...) is missing a closing parenthesis.');
+ return 'linear-gradient'+src.slice(open,end);
+}
+function parseCssGradient(text){const code=extractLinearGradient(text);
+ const m=code.match(/^linear-gradient\s*\(([\s\S]*)\)$/i);
+ const args=splitCssArguments(m[1]);
+ if(args.length<2)throw new Error('The gradient needs at least two colors.');
+ if(/\bvar\s*\(/i.test(code))throw new Error('CSS variables need actual color values. Replace var(...) with #hex, rgb(...), hsl(...) or a named color.');
+ if(!CSS.supports('background-image',code))throw new Error('The linear-gradient(...) was found, but its colors or stops are not supported by this browser.');
+ let travel=90,from=0;const maybeAngle=cssAngleToTravel(args[0]);if(maybeAngle!==null){travel=maybeAngle;from=1;}
+ const stops=[];const stopPattern=/^([\s\S]*?)(?:\s+([+-]?(?:\d+(?:\.\d+)?|\.\d+)%)\s*(?:([+-]?(?:\d+(?:\.\d+)?|\.\d+)%)\s*)?)?$/i;
+ for(const token of args.slice(from)){let m=token.match(stopPattern);if(!m||!m[1].trim())throw new Error('Invalid color stop: '+token);let value=m[1].trim(),color=getCssColor(value);if(!m[2]&&/\s(?:[+-]?\d+(?:\.\d+)?(?:px|rem|em|vh|vw))$/i.test(value))throw new Error('Use percentage stops rather than CSS pixel lengths.');const positions=[m[2],m[3]].filter(Boolean);if(!positions.length)stops.push({pos:null,color,colorText:value});else for(const pos of positions){let n=parseFloat(pos)/100;if(!Number.isFinite(n))throw new Error('Invalid color-stop percentage: '+pos);stops.push({pos:n,color,colorText:value});}}
+ if(stops.length<2)throw new Error('Use at least two CSS color stops.');if(stops.length>32)throw new Error('Maximum 32 CSS color stops.');
+ if(stops[0].pos===null)stops[0].pos=0;if(stops.at(-1).pos===null)stops.at(-1).pos=1;
+ // CSS's fixup rule: explicit stops cannot go backwards.
+ let last=0;for(let i=0;i<stops.length;i++)if(stops[i].pos!==null){stops[i].pos=Math.max(last,stops[i].pos);last=stops[i].pos;}
+ for(let i=0;i<stops.length;i++){if(stops[i].pos!==null)continue;let start=i-1,j=i;while(j<stops.length&&stops[j].pos===null)j++;const n=j-i+1,lo=stops[start].pos,hi=stops[j].pos;for(let k=i;k<j;k++)stops[k].pos=lo+(hi-lo)*(k-i+1)/n;i=j-1;}
+ return {angle:travel,stops};
+}
+function sampleCssGradient(t,out){const stops=state.cssStops;let u=fraction(t/2)*2,u01=u<=1?u:2-u;let left=stops[0],right=stops.at(-1);if(u01<=left.pos)right=left;else if(u01>=right.pos)left=right;else for(let j=1;j<stops.length;j++)if(u01<=stops[j].pos){left=stops[j-1];right=stops[j];break;}
+ const delta=right.pos-left.pos,w=delta<=0?1:clamp((u01-left.pos)/delta,0,1),a=left.color,b=right.color,alpha=a[3]*(1-w)+b[3]*w;out[3]=alpha;
+ if(alpha<1e-6){out[0]=out[1]=out[2]=0;return;}
+ for(let c=0;c<3;c++)out[c]=(a[c]*a[3]*(1-w)+b[c]*b[3]*w)/alpha;
+}
+function formatCssStop(s){return `${s.colorText} ${+(s.pos*100).toFixed(3)}%`;}
+function currentCssCode(){const cssAngle=+((state.angle+90)%360).toFixed(2);return `linear-gradient(${cssAngle}deg, ${state.cssStops?state.cssStops.map(formatCssStop).join(', '):state.palette.map((c,i)=>`${c} ${+(i*100/(state.palette.length-1)).toFixed(3)}%`).join(', ')})`;}
+function refreshCssUI(syncEditor=false){const active=!!state.cssStops;$('cssModeTag').textContent=active?'CSS ACTIVE':'PALETTE MODE';$('cssPaletteHint').style.display=active?'block':'none';if(syncEditor)$('cssInput').value=currentCssCode();$('cssStrip').style.backgroundImage=active?currentCssCode():currentCssCode();if(active){$('cssStatus').textContent=`CSS mode · ${state.cssStops.length} stops · animated and masked to the sprite`;$('cssStatus').className='css-status active';}}
+function disableCssMode(){if(state.cssStops){state.cssStops=null;state.preset='Custom';$('cssStatus').textContent='Regular palette mode is active.';$('cssStatus').className='css-status';}refreshCssUI(false);}
+$('applyCssBtn').onclick=()=>{try{const result=parseCssGradient($('cssInput').value);state.cssStops=result.stops;state.angle=Math.round(result.angle*100)/100;state.preset='CSS';state.palette=result.stops.slice(0,8).map(s=>rgbToHex(...s.color.slice(0,3)));refreshAll();refreshCssUI(true);state.view='effect';syncControls();draw();notify('CSS linear gradient applied to sprite ✦');}catch(e){$('cssStatus').textContent=e.message;$('cssStatus').className='css-status error';notify('Could not apply CSS: '+e.message);}};
+$('paletteModeBtn').onclick=()=>{disableCssMode();refreshAll();notify('Switched to regular palette colors');};
+$('copyCssBtn').onclick=async()=>{const code=currentCssCode();$('cssInput').value=code;try{if(navigator.clipboard&&window.isSecureContext)await navigator.clipboard.writeText(code);else{$('cssInput').select();if(!document.execCommand('copy'))throw new Error('Clipboard blocked');}notify('Current linear-gradient CSS copied');}catch(e){$('cssInput').focus();$('cssInput').select();notify('CSS selected — press Ctrl+C to copy');}};
+$('cssInput').addEventListener('input',()=>{try{const code=extractLinearGradient($('cssInput').value);$('cssStrip').style.backgroundImage=CSS.supports('background-image',code)?code:'none';}catch(e){$('cssStrip').style.backgroundImage='none';}$('cssStatus').textContent='Select Apply CSS gradient to use this code on the sprite.';$('cssStatus').className='css-status';});
+// Straight linear color interpolation with cyclic endpoints for a seamless moving band.
+function samplePalette(t,out){const count=paletteRGB.length,u=fraction(t)*count,i=Math.floor(u),q=u-i;const a=paletteRGB[i%count],b=paletteRGB[(i+1)%count];out[0]=a[0]+(b[0]-a[0])*q;out[1]=a[1]+(b[1]-a[1])*q;out[2]=a[2]+(b[2]-a[2])*q;}
+// Preserve the sprite's per-pixel brightness while letting the moving CSS/palette
+// colors set its hue and saturation. This prevents dark outlines and highlights
+// from being flattened by an otherwise fully opaque gradient replacement.
+function shadePreservingTint(gr,gg,gb,or,og,ob,out){
+ const a=gr/255,b=gg/255,c=gb/255,max=Math.max(a,b,c),min=Math.min(a,b,c),delta=max-min;
+ const gl=(max+min)/2;
+ const saturation=delta<1e-8?0:delta/(1-Math.abs(2*gl-1));
+ let hue=0;
+ if(delta>=1e-8){
+  if(max===a)hue=(((b-c)/delta)%6+6)%6;
+  else if(max===b)hue=(c-a)/delta+2;
+  else hue=(a-b)/delta+4;
+ }
+ // HSL color mode: gradient hue/saturation + ORIGINAL sprite lightness.
+ const sr=or/255,sg=og/255,sb=ob/255;
+ const light=(Math.max(sr,sg,sb)+Math.min(sr,sg,sb))/2;
+ const chroma=(1-Math.abs(2*light-1))*saturation;
+ const h=(hue%6+6)%6,secondary=chroma*(1-Math.abs(h%2-1));
+ let r=0,g=0,bv=0;
+ if(h<1){r=chroma;g=secondary;}else if(h<2){r=secondary;g=chroma;}
+ else if(h<3){g=chroma;bv=secondary;}else if(h<4){g=secondary;bv=chroma;}
+ else if(h<5){r=secondary;bv=chroma;}else{r=chroma;bv=secondary;}
+ const offset=light-chroma/2;
+ out[0]=(r+offset)*255;out[1]=(g+offset)*255;out[2]=(bv+offset)*255;
+}
+// All effects are deterministic functions of the normalized cycle phase p.
+// This makes every rendered frame reproducible and looping video truly seamless.
+function renderFx(p,source=sourceImageData,targetCtx=fxCtx,targetFrame=frame){
+ if(!source)return;
+ const original=source.data,data=targetFrame.data;
+ const a=state.angle*Math.PI/180,ca=Math.cos(a),sa=Math.sin(a);
+ const opacity=state.intensity/100,grad=[0,0,0,1];
+ const transparency=1-state.spriteTransparency/100;
+ for(let k=0;k<SIZE*SIZE;k++){
+  const i=k*4,alpha=original[i+3];
+  if(!alpha){data[i]=data[i+1]=data[i+2]=data[i+3]=0;continue;}
+  const px=k%SIZE,py=(k/SIZE)|0;
+  const x=(px-63.5)/SIZE,y=(py-63.5)/SIZE;
+  let position=x*ca+y*sa;
+  position=state.cssStops?position/(Math.abs(ca)+Math.abs(sa))*state.scale+.5-state.direction*p*2 : position*state.scale-state.direction*p;
+  if(state.cssStops)sampleCssGradient(position,grad);else{samplePalette(position,grad);grad[3]=1;}
+  const mix=opacity*grad[3],keep=1-mix;
+  let r=original[i],g=original[i+1],b=original[i+2];
+  if(mix>0){
+   shadePreservingTint(grad[0],grad[1],grad[2],r,g,b,grad);
+   r=r*keep+grad[0]*mix;g=g*keep+grad[1]*mix;b=b*keep+grad[2]*mix;
+  }
+  data[i]=clamp(Math.round(r));data[i+1]=clamp(Math.round(g));data[i+2]=clamp(Math.round(b));
+  data[i+3]=Math.round(alpha*transparency); // Never leak outside original alpha mask.
+ }
+ targetCtx.putImageData(targetFrame,0,0);
+}
+function renderPreview(){for(const side of ['front','back']){
+ if(side==='back'&&!dualEnabled)continue;
+ const slot=slots[side],canvas=$(side==='front'?'previewCanvas':'backPreviewCanvas'),ctx=canvas.getContext('2d');
+ const stageEl=$(side==='front'?'stage':'backStage'),splitLine=$(side==='front'?'splitLine':'backSplitLine');const w=512;
+ ctx.clearRect(0,0,w,w);ctx.imageSmoothingEnabled=false;
+ const original=slot.rawCanvas,source=slot.sourceCanvas,fx=slot.fxCanvas;
+ ctx.save();ctx.translate(slot.offX,slot.offY);ctx.scale(slot.zoom,slot.zoom);
+ if(state.view==='original')ctx.drawImage(original,0,0,w,w);
+ else if(state.view==='cutout'){ctx.drawImage(source,0,0,w,w);
+  if(side===activeSide&&lassoPoints.length>1){ctx.save();ctx.strokeStyle='#eaf6ff';ctx.lineWidth=2/slot.zoom;ctx.setLineDash([7/slot.zoom,5/slot.zoom]);ctx.beginPath();ctx.moveTo(lassoPoints[0][0]*4,lassoPoints[0][1]*4);for(let j=1;j<lassoPoints.length;j++)ctx.lineTo(lassoPoints[j][0]*4,lassoPoints[j][1]*4);ctx.stroke();ctx.restore();}}
+ else{ctx.drawImage(fx,0,0,w,w);if(state.view==='compare'){ctx.save();ctx.beginPath();ctx.rect(-slot.offX/slot.zoom,-slot.offY/slot.zoom,w*state.split/slot.zoom,w/slot.zoom);ctx.clip();ctx.drawImage(source,0,0,w,w);ctx.restore();}}
+ ctx.restore();stageEl.classList.toggle('compare',state.view==='compare');stageEl.classList.toggle('editing',state.view==='cutout');splitLine.style.left=(state.split*100)+'%';
+ }}
+function draw(){syncSlotFromEditor();updateSideUI();for(const side of ['front','back']){if(side==='back'&&!dualEnabled)continue;const s=slots[side];if(s.sourceImageData)renderFx(phase,s.sourceImageData,s.fxCtx,s.fxFrame);}if(sourceImageData)renderFx(phase);renderPreview();$('timeline').value=Math.round(phase*1000);$('timeText').textContent='00:'+String(Math.floor(phase*5/state.speed)).padStart(2,'0');$('durationText').textContent=(5/state.speed).toFixed(1)+'s seamless loop';$('animTypeTag').textContent=state.view==='cutout'?'MASK EDIT':'LINEAR';drawPending=false;}
+function buildPresetUI(){const wrap=$('presetGrid');wrap.innerHTML='';presets.forEach(item=>{const btn=document.createElement('button');btn.className='preset'+(state.preset===item.name?' active':'');btn.title=`Choose ${item.name} palette`;btn.innerHTML=`<div class="gradient" style="background:linear-gradient(115deg,${item.colors.join(',')})"></div><span class="preset-name">${item.name}</span>`;btn.onclick=()=>{state.cssStops=null;state.preset=item.name;state.palette=[...item.colors];refreshAll();};wrap.append(btn);});}
+function buildSwatches(){const wrap=$('swatches');wrap.innerHTML='';$('paletteCount').textContent=state.palette.length+' colors';state.palette.forEach((hex,index)=>{const d=document.createElement('div');d.className='swatch';const color=document.createElement('input');color.type='color';color.value=hex;color.setAttribute('aria-label','Color '+(index+1));const label=document.createElement('label');label.textContent=hex.toUpperCase();color.addEventListener('input',()=>{disableCssMode();state.palette[index]=color.value.toUpperCase();state.preset='Custom';label.textContent=state.palette[index];refreshPaletteRGB();buildPresetUI();refreshCssUI(false);drawPending=true;});d.append(color,label);
+ if(state.palette.length>2){const b=document.createElement('button');b.textContent='×';b.title='Remove color';b.setAttribute('aria-label','Remove color '+(index+1));b.onclick=()=>{disableCssMode();state.palette.splice(index,1);state.preset='Custom';refreshAll();};d.append(b);}wrap.append(d);});}
+function syncControls(){['intensity','speed','scale','angle'].forEach(k=>$(k).value=state[k]);$('intensityVal').textContent=state.intensity+'%';document.querySelectorAll('[data-opacity]').forEach(btn=>btn.classList.toggle('active',Number(btn.dataset.opacity)===state.intensity));$('opacityDescription').textContent=state.intensity===0?'0% opacity: the gradient is completely off. You are seeing the exact clean sprite.':'Soft Tint preserves original pixel shading while the gradient moves. Use Prism Effect below to fade the sprite itself.';$('speedVal').textContent=state.speed.toFixed(1)+'×';$('scaleVal').textContent=state.scale.toFixed(1)+'×';$('angleVal').textContent=state.angle+'°';$('reverseMotionBtn').textContent=state.direction===1?'⇄ Reverse movement (→)':'⇄ Reverse movement (←)';$('playBtn').textContent=state.playing?'Ⅱ':'▶';$('playBtn').setAttribute('aria-label',state.playing?'Pause animation':'Play animation');document.querySelectorAll('[data-view]').forEach(btn=>btn.classList.toggle('active',btn.dataset.view===state.view));
+ $('spriteTransparency').value=state.spriteTransparency;$('spriteTransparencyVal').textContent=state.spriteTransparency+'%';updateVideoNote();updateSideUI();}
+function refreshAll(){refreshPaletteRGB();buildPresetUI();buildSwatches();syncControls();refreshCssUI(false);drawPending=true;draw();}
+['intensity','speed','scale','angle'].forEach(k=>{$(k).addEventListener('input',e=>{state[k]=parseFloat(e.target.value);syncControls();if(k==='angle'&&state.cssStops)refreshCssUI(true);drawPending=true;});});
+document.querySelectorAll('[data-opacity]').forEach(btn=>btn.onclick=()=>{state.intensity=Number(btn.dataset.opacity);syncControls();drawPending=true;draw();});
+['spriteTransparency'].forEach(id=>{$(id).oninput=e=>{state[id]=Number(e.target.value);syncControls();drawPending=true;draw();};});
+$('reverseMotionBtn').onclick=()=>{state.direction*=-1;syncControls();drawPending=true;};
+$('addColorBtn').onclick=()=>{if(state.palette.length>=8){notify('Maximum eight colors per palette');return;}const last=hexToRgb(state.palette.at(-1));disableCssMode();state.palette.push(rgbToHex(255-last[0],255-last[1],255-last[2]));state.preset='Custom';refreshAll();};
+$('reverseColorsBtn').onclick=()=>{disableCssMode();state.palette.reverse();state.preset='Custom';refreshAll();notify('Gradient direction reversed');};
+$('resetBtn').onclick=()=>{state={...defaults,palette:[...defaults.palette]};phase=0;refreshAll();notify('Back to the Aurora preset');};
+$('randomizeBtn').onclick=()=>{disableCssMode();const base=Math.random()*360;const offsets=[0,43,117,188,265];state.palette=offsets.slice(0,4+Math.floor(Math.random()*2)).map((o,i)=>hslToHex((base+o)%360,75+Math.random()*18,52+Math.random()*17));state.angle=Math.floor(Math.random()*72)*5;state.preset='Custom';refreshAll();notify('New linear color palette ready ✦');};
+$('demoBtn').onclick=()=>{drawDemo();refreshLibraryUI();notify('Original demo sprite loaded');};
+function togglePlaying(){state.playing=!state.playing;syncControls();drawPending=true;}
+$('playBtn').onclick=togglePlaying;
+$('timeline').addEventListener('input',e=>{phase=Number(e.target.value)/1000;state.playing=false;syncControls();drawPending=true;draw();});
+document.querySelectorAll('[data-view]').forEach(btn=>btn.onclick=()=>{state.view=btn.dataset.view;syncControls();drawPending=true;draw();});
+let stage=$('stage'),movingSplit=false,panGesture=null;
+function setSplitFromPointer(e){const b=stage.getBoundingClientRect();state.split=clamp((e.clientX-b.left)/b.width,0,1);drawPending=true;draw();}
+for(const side of ['front','back']){
+ const el=$(side==='front'?'stage':'backStage');
+ el.addEventListener('wheel',e=>{e.preventDefault();if(side==='back'&&!dualEnabled)return;const b=el.getBoundingClientRect(),cx=(e.clientX-b.left)*512/b.width,cy=(e.clientY-b.top)*512/b.height;zoomSlot(side,e.deltaY,cx,cy);},{passive:false});
+ el.addEventListener('pointerdown',e=>{if(side!==activeSide)activateSide(side);stage=el;
+  if(e.button===2||e.button===1){e.preventDefault();panGesture={side,x:e.clientX,y:e.clientY};el.setPointerCapture(e.pointerId);return;}
+  if(e.button!==0)return;
+  if(state.view==='compare'){movingSplit=true;el.setPointerCapture(e.pointerId);setSplitFromPointer(e);}else if(state.view==='cutout')startMaskPointer(e);});
+ el.addEventListener('pointermove',e=>{if(panGesture&&panGesture.side===side){const slot=slots[side],b=el.getBoundingClientRect(),dx=(e.clientX-panGesture.x)*512/b.width,dy=(e.clientY-panGesture.y)*512/b.height;panGesture.x=e.clientX;panGesture.y=e.clientY;slot.offX=Math.max(512*(1-slot.zoom),Math.min(0,slot.offX+dx));slot.offY=Math.max(512*(1-slot.zoom),Math.min(0,slot.offY+dy));drawPending=true;draw();return;}if(side!==activeSide)return;if(movingSplit)setSplitFromPointer(e);else if(state.view==='cutout')moveMaskPointer(e);});
+ el.addEventListener('pointerup',e=>{if(panGesture){panGesture=null;return;}if(side!==activeSide)return;movingSplit=false;finishMaskPointer(e);});
+ el.addEventListener('pointercancel',e=>{panGesture=null;if(side!==activeSide)return;movingSplit=false;finishMaskPointer(e,true);});
+ el.addEventListener('pointerleave',()=>{$(side==='front'?'brushCursor':'backBrushCursor').style.display='none';});
+ el.addEventListener('contextmenu',e=>e.preventDefault());
+ el.addEventListener('dblclick',()=>{activateSide(side);$('fileInput').click();});
+}
+$('dualViewToggle').onchange=e=>setDual(e.target.checked);
+$('frontSelectBtn').onclick=()=>activateSide('front');$('backSelectBtn').onclick=()=>activateSide('back');
+$('frontUploadBtn').onclick=()=>{activateSide('front');$('fileInput').click();};
+$('backUploadBtn').onclick=()=>{if(!dualEnabled)setDual(true);activateSide('back');$('fileInput').click();};
+$('frontZoomReset').onclick=()=>resetZoom('front');$('backZoomReset').onclick=()=>resetZoom('back');
+// File import, including drag/drop and clipboard paste.
+$('uploadBtn').onclick=()=>$('fileInput').click();
+$('fileInput').onchange=e=>{if(e.target.files[0])loadFile(e.target.files[0]);e.target.value='';};
+$('savedSpriteSelect').onchange=e=>{if(e.target.value)loadSavedSprite(e.target.value,true);};
+$('prevSpriteBtn').onclick=()=>cycleSavedSprite(-1);
+$('nextSpriteBtn').onclick=()=>cycleSavedSprite(1);
+$('saveSpriteBtn').onclick=()=>upsertCurrentSprite(null,true);
+$('renameSpriteBtn').onclick=renameCurrentSprite;
+$('deleteSpriteBtn').onclick=deleteCurrentSprite;
+let dragDepth=0;
+document.addEventListener('dragenter',e=>{if([...e.dataTransfer?.types||[]].includes('Files')){e.preventDefault();dragDepth++;stage.classList.add('dragging');}});
+document.addEventListener('dragover',e=>{if([...e.dataTransfer?.types||[]].includes('Files'))e.preventDefault();});
+document.addEventListener('dragleave',e=>{dragDepth=Math.max(0,dragDepth-1);if(!dragDepth)stage.classList.remove('dragging');});
+document.addEventListener('drop',e=>{e.preventDefault();dragDepth=0;stage.classList.remove('dragging');const file=[...e.dataTransfer.files].find(f=>f.type.startsWith('image/'));if(file)loadFile(file);else notify('Drop an image file to load it');});
+document.addEventListener('paste',e=>{const items=[...(e.clipboardData?.items||[])];const item=items.find(i=>i.type.startsWith('image/'));if(item){const f=item.getAsFile();if(f){e.preventDefault();loadFile(f);}}});
+function loadFile(file){
+ if(!file.type.startsWith('image/')){notify('Please choose an image file');return;}
+ if(file.size>25*1024*1024){notify('Choose an image under 25 MB');return;}
+ currentSpriteId=null;activeSlot().id=null;
+ const url=URL.createObjectURL(file),img=new Image();img.onload=()=>{
+  rawCtx.clearRect(0,0,SIZE,SIZE);rawCtx.imageSmoothingEnabled=false;rawCtx.drawImage(img,0,0,SIZE,SIZE);
+  rawImageData=rawCtx.getImageData(0,0,SIZE,SIZE);alphaMask.fill(255);undoMasks=[];
+  spriteBaseName=(file.name.replace(/\.[^.]+$/,'')||'pokemon-sprite').replace(/[^a-z0-9_-]+/gi,'-').toLowerCase();
+  $('spriteName').textContent=file.name;$('spriteName').title=file.name;
+  $('spriteDimensions').textContent=img.width+' × '+img.height+' → 128 × 128';
+  $('stageCaption').textContent='128 × 128 · transparency preserved';
+  syncSourceFromMask();
+  let result=null;
+  const cornerMatch=measureCornerConsistency();
+  if(cornerMatch>=3||measureBorderSmoothness()<7){result=autoRemove(true);}
+  if(result && result.removed>=Math.round(SIZE*SIZE*.04)){
+   state.view='effect';setCutoutStatus(`Automatically cleared ${result.removed.toLocaleString()} connected background pixels. Click Cutout to refine the edges.`);
+   notify('Background removed automatically ✦');
+  }else if(countAlphaZero()>0){state.view='effect';setCutoutStatus('Transparent pixels detected. The gradient already stays inside the sprite.');notify('Transparent sprite imported ✦');}
+  else{state.view='cutout';setCutoutStatus('Background detected. Try Auto-remove, or use Outline/Erase to isolate your sprite.');notify('Image loaded — select background removal tool');}
+  refreshAll();upsertCurrentSprite(file.name,false);URL.revokeObjectURL(url);
+ };img.onerror=()=>{URL.revokeObjectURL(url);notify('Could not open this image. Try PNG, JPEG, or WEBP.');};img.src=url;
+}
+// ------------------------------------------------------------
+// SPECTRA cutout editor (fully offline). The original RGB is
+// immutable; only the alpha mask changes. ALL preview/export
+// formats sample the same masked sourceCanvas.
+// ------------------------------------------------------------
+function setCutoutStatus(t){$('cutoutStatus').textContent=t;}
+function countAlphaZero(){if(!rawImageData)return 0;const a=rawImageData.data;let n=0;for(let k=0;k<SIZE*SIZE;k++)if(a[k*4+3]*alphaMask[k]<255*16)n++;return n;}
+function updateMaskBadge(){let removed=countAlphaZero();$('maskBadge').textContent=`Clear: ${Math.round(removed/(SIZE*SIZE)*100)}%`;}
+function syncSourceFromMask(){
+ if(!rawImageData)return;
+ const raw=rawImageData.data;
+ const out=sourceCtx.createImageData(SIZE,SIZE);
+ for(let k=0;k<SIZE*SIZE;k++){let i=k*4;out.data[i]=raw[i];out.data[i+1]=raw[i+1];out.data[i+2]=raw[i+2];out.data[i+3]=Math.round(raw[i+3]*alphaMask[k]/255);}
+ sourceCtx.putImageData(out,0,0);sourceImageData=out;updateMaskBadge();drawPending=true;queueSpriteSave();
+}
+function snapshotMask(){undoMasks.push(alphaMask.slice());if(undoMasks.length>24)undoMasks.shift();}
+function undoMask(){if(!undoMasks.length){notify('No cutout changes to undo');return;}alphaMask=undoMasks.pop();syncSourceFromMask();setCutoutStatus('Undid the last cutout edit.');draw();}
+function pixelDistance(data,at,rgb){let i=at*4,dr=data[i]-rgb[0],dg=data[i+1]-rgb[1],db=data[i+2]-rgb[2];return Math.sqrt((dr*dr*.30)+(dg*dg*.59)+(db*db*.11));}
+function isInFrame(x,y){return x>=0&&y>=0&&x<SIZE&&y<SIZE;}
+function getPixelColor(idx){const d=rawImageData.data,i=idx*4;return[d[i],d[i+1],d[i+2]];}
+function measureCornerConsistency(){if(!rawImageData)return 0;const d=rawImageData.data,idx=[0,SIZE-1,SIZE*(SIZE-1),SIZE*SIZE-1],tol=Math.max(18,Number($('tolerance').value));let best=1;for(let a of idx){let c=getPixelColor(a),n=0;for(let b of idx)if(pixelDistance(d,b,c)<tol)n++;best=Math.max(best,n);}return best;}
+function measureBorderSmoothness(){
+ if(!rawImageData)return Infinity;const d=rawImageData.data;let sum=0,n=0;
+ for(let v=0;v<SIZE-1;v++)for(let [a,b] of [[v,v+1],[(SIZE-1)*SIZE+v,(SIZE-1)*SIZE+v+1],[v*SIZE,(v+1)*SIZE],[v*SIZE+SIZE-1,(v+1)*SIZE+SIZE-1]]){sum+=pixelDistance(d,b,getPixelColor(a));n++;}
+ return sum/n;
+}
+// For smooth but non-solid gradient backgrounds, compare adjacent pixels instead
+// of requiring the same color everywhere. Sharp sprite edges stop the fill.
+function floodSmoothBackground(stepTolerance){
+ const d=rawImageData.data,seen=new Uint8Array(SIZE*SIZE),queue=new Int32Array(SIZE*SIZE),out=[];
+ let head=0,tail=0;for(const seed of [0,SIZE-1,(SIZE-1)*SIZE,SIZE*SIZE-1]){if(!seen[seed]){seen[seed]=1;queue[tail++]=seed;}}
+ while(head<tail){const idx=queue[head++],x=idx%SIZE,y=idx/SIZE|0;out.push(idx);
+  for(const [ni,valid] of [[idx-1,x>0],[idx+1,x<SIZE-1],[idx-SIZE,y>0],[idx+SIZE,y<SIZE-1]]){
+   if(!valid||seen[ni])continue;seen[ni]=1;
+   if(pixelDistance(d,ni,getPixelColor(idx))<=stepTolerance)queue[tail++]=ni;
+  }
+ }
+ return out;
+}
+function floodConnected(seeds,refColors,tolerance){
+ const d=rawImageData.data,seen=new Uint8Array(SIZE*SIZE),q=new Int32Array(SIZE*SIZE),removed=[];
+ let start=0,end=0;
+ for(let k=0;k<seeds.length;k++){const seed=seeds[k];if(seed<0||seed>=SIZE*SIZE||seen[seed])continue;let c=refColors[k%refColors.length],t=tolerance;if(pixelDistance(d,seed,c)>t)continue;seen[seed]=1;q[end++]=seed;}
+ while(start<end){const idx=q[start++],x=idx%SIZE,y=(idx/SIZE)|0;removed.push(idx);
+  const neighbors=[idx-1,idx+1,idx-SIZE,idx+SIZE];
+  for(let n=0;n<4;n++){const ni=neighbors[n];if(n===0&&x===0||n===1&&x===SIZE-1||n===2&&y===0||n===3&&y===SIZE-1)continue;
+   if(seen[ni])continue;seen[ni]=1;
+   // Any reference color is allowed as long as region stays connected.
+   let fits=false;for(const c of refColors){if(pixelDistance(d,ni,c)<=tolerance){fits=true;break;}}
+   if(fits)q[end++]=ni;
+  }
+ }
+ return removed;
+}
+function wandAt(x,y){if(!rawImageData)return;let idx=y*SIZE+x,c=getPixelColor(idx),tolerance=Number($('tolerance').value),removed=floodConnected([idx],[c],tolerance);if(removed.length===SIZE*SIZE){notify('Whole image selected. Reduce the color tolerance.');return;}
+ snapshotMask();for(let k of removed)alphaMask[k]=0;syncSourceFromMask();setCutoutStatus(`Color wand cleared ${removed.length.toLocaleString()} connected pixels. Click more background regions to continue.`);draw();}
+function autoRemove(silent=false){
+ if(!rawImageData)return null;
+ const tolerance=Number($('tolerance').value),d=rawImageData.data;
+ const corners=[0,SIZE-1,SIZE*(SIZE-1),SIZE*SIZE-1];
+ // Use sampled corner colors, but only group corners whose colors are close.
+ // This intentionally avoids removing unrelated bright sprite colors.
+ let groups=[];for(let idx of corners){let color=getPixelColor(idx),g=groups.find(g=>pixelDistance(d,idx,g.color)<tolerance+6);if(g)g.indices.push(idx);else groups.push({color,indices:[idx]});}
+ groups.sort((a,b)=>b.indices.length-a.indices.length);
+ let selected=groups.filter(g=>g.indices.length>=2);
+ if(!selected.length)selected=[groups[0]];
+ const seeds=selected.flatMap(g=>g.indices),colors=selected.map(g=>g.color);
+ const smoothMode=measureCornerConsistency()<3&&measureBorderSmoothness()<7;
+ const removed=smoothMode?floodSmoothBackground(Math.max(10,tolerance*.62)):floodConnected(seeds,colors,tolerance);
+ if(removed.length>SIZE*SIZE*.94){if(!silent)notify('Selection is too large. Lower tolerance or try the Outline tool.');return{removed:0};}
+ if(removed.length===0){if(!silent)notify('No connected background found. Try a higher tolerance.');return{removed:0};}
+ if(!silent)snapshotMask();
+ for(const idx of removed)alphaMask[idx]=0;
+ syncSourceFromMask();
+ if(!silent){state.view='cutout';syncControls();setCutoutStatus(`Auto-remove cleared ${removed.length.toLocaleString()} connected background pixels. Refine with Erase/Restore.`);notify('Background removed ✦');draw();}
+ return{removed:removed.length};
+}
+$('autoCutoutBtn').onclick=()=>autoRemove();
+$('undoMaskBtn').onclick=undoMask;
+$('resetCutoutBtn').onclick=()=>{if(!rawImageData)return;snapshotMask();alphaMask.fill(255);syncSourceFromMask();state.view='cutout';syncControls();setCutoutStatus('Restored original image. Try removal again.');draw();};
+$('tolerance').addEventListener('input',e=>{$('toleranceVal').textContent=e.target.value;});
+$('brushSize').addEventListener('input',e=>{brushSize=Number(e.target.value);$('brushSizeVal').textContent=brushSize+' px';});
+$('toolGrid').addEventListener('click',e=>{const b=e.target.closest('[data-tool]');if(!b)return;currentTool=b.dataset.tool;document.querySelectorAll('[data-tool]').forEach(t=>t.classList.toggle('active',t===b));state.view='cutout';syncControls();draw();});
+function pointerPixel(e){const r=stage.getBoundingClientRect(),s=activeSlot(),x=(e.clientX-r.left)*512/r.width,y=(e.clientY-r.top)*512/r.height;return{x:clamp(Math.floor((x-s.offX)/s.zoom/4),0,SIZE-1),y:clamp(Math.floor((y-s.offY)/s.zoom/4),0,SIZE-1)};}
+function showBrushCursor(e){const c=$(activeSide==='front'?'brushCursor':'backBrushCursor');if(state.view!=='cutout'||!['erase','restore'].includes(currentTool)){c.style.display='none';return;}
+ let rect=stage.getBoundingClientRect(),diameter=Math.max(4,brushSize*rect.width/SIZE*activeSlot().zoom);c.style.display='block';c.style.width=c.style.height=diameter+'px';c.style.left=((e.clientX-rect.left))+'px';c.style.top=(e.clientY-rect.top)+'px';}
+function stampBrush(x,y){const r=brushSize/2,fromX=Math.max(0,Math.floor(x-r)),toX=Math.min(SIZE-1,Math.ceil(x+r)),fromY=Math.max(0,Math.floor(y-r)),toY=Math.min(SIZE-1,Math.ceil(y+r));
+ for(let yy=fromY;yy<=toY;yy++)for(let xx=fromX;xx<=toX;xx++){if((xx-x)**2+(yy-y)**2<=r*r+0.25)alphaMask[yy*SIZE+xx]=currentTool==='erase'?0:255;}
+}
+function brushLine(x1,y1,x2,y2){let dx=x2-x1,dy=y2-y1,steps=Math.max(Math.abs(dx),Math.abs(dy),1)*2;for(let i=0;i<=steps;i++)stampBrush(Math.round(x1+dx*i/steps),Math.round(y1+dy*i/steps));}
+function startMaskPointer(e){if(e.button!==0||!rawImageData)return;stage.setPointerCapture(e.pointerId);const {x,y}=pointerPixel(e);pointerPainting=true;
+ if(currentTool==='wand'){wandAt(x,y);pointerPainting=false;return;}
+ if(currentTool==='lasso'){lassoPoints=[[x+.5,y+.5]];drawPending=true;draw();return;}
+ snapshotMask();stampBrush(x,y);lastBrushPoint={x,y};syncSourceFromMask();draw();showBrushCursor(e);
+}
+function moveMaskPointer(e){showBrushCursor(e);if(!pointerPainting)return;const {x,y}=pointerPixel(e);
+ if(currentTool==='lasso'){const last=lassoPoints.at(-1);if(Math.hypot(x+.5-last[0],y+.5-last[1])>=.65){lassoPoints.push([x+.5,y+.5]);drawPending=true;draw();}return;}
+ if(!lastBrushPoint)return;brushLine(lastBrushPoint.x,lastBrushPoint.y,x,y);lastBrushPoint={x,y};syncSourceFromMask();draw();
+}
+function polygonIncludes(px,py,poly){let c=false;for(let i=0,j=poly.length-1;i<poly.length;j=i++){let xi=poly[i][0],yi=poly[i][1],xj=poly[j][0],yj=poly[j][1];if((yi>py)!==(yj>py)&&px<(xj-xi)*(py-yi)/(yj-yi)+xi)c=!c;}return c;}
+function finishMaskPointer(e,cancel=false){if(!pointerPainting)return;pointerPainting=false;lastBrushPoint=null;
+ if(currentTool==='lasso'){if(!cancel && lassoPoints.length>=3){snapshotMask();const vertices=lassoPoints.slice();for(let k=0;k<SIZE*SIZE;k++){const x=k%SIZE+.5,y=((k/SIZE)|0)+.5;if(!polygonIncludes(x,y,vertices))alphaMask[k]=0;}syncSourceFromMask();setCutoutStatus('Outline isolated the traced area. Use Erase and Restore for pixel-perfect edges.');notify('Subject isolated ✦');}else if(!cancel)notify('Trace around the entire sprite to close the outline');lassoPoints=[];draw();}
+}
+function fitSprite(){if(!rawImageData)return;let minX=SIZE,maxX=-1,minY=SIZE,maxY=-1;
+ for(let k=0;k<SIZE*SIZE;k++){if(alphaMask[k]>0&&rawImageData.data[k*4+3]>0){let x=k%SIZE,y=(k/SIZE)|0;minX=Math.min(minX,x);maxX=Math.max(maxX,x);minY=Math.min(minY,y);maxY=Math.max(maxY,y);}}
+ if(maxX<minX){notify('No visible sprite pixels to fit');return;}
+ if(minX===0&&maxX===SIZE-1&&minY===0&&maxY===SIZE-1){notify('The sprite fills the entire canvas. Remove the background first.');return;}
+ snapshotMask();const boxW=maxX-minX+1,boxH=maxY-minY+1,ratio=Math.min(116/boxW,116/boxH),targetW=Math.max(1,Math.round(boxW*ratio)),targetH=Math.max(1,Math.round(boxH*ratio));
+ const bx=Math.floor((SIZE-targetW)/2),by=Math.floor((SIZE-targetH)/2);
+ const cleaned=document.createElement('canvas');cleaned.width=cleaned.height=SIZE;const ctx=cleaned.getContext('2d');ctx.imageSmoothingEnabled=false;ctx.drawImage(sourceCanvas,minX,minY,boxW,boxH,bx,by,targetW,targetH);
+ rawCtx.clearRect(0,0,SIZE,SIZE);rawCtx.drawImage(cleaned,0,0);rawImageData=rawCtx.getImageData(0,0,SIZE,SIZE);alphaMask.fill(255);undoMasks=[];syncSourceFromMask();state.view='effect';syncControls();draw();setCutoutStatus('Centered the extracted sprite in a 128 × 128 transparent canvas.');notify('Sprite fitted to 128 × 128 ✦');
+}
+$('fitSpriteBtn').onclick=fitSprite;
+
+// Custom original pixel-art creature for instant demonstration.
+function drawDemo(){const c=document.createElement('canvas');c.width=c.height=32;const a=c.getContext('2d');a.imageSmoothingEnabled=false;
+ const poly=(coords,color)=>{a.fillStyle=color;a.beginPath();a.moveTo(coords[0][0],coords[0][1]);for(let i=1;i<coords.length;i++)a.lineTo(coords[i][0],coords[i][1]);a.closePath();a.fill();};
+ poly([[4,4],[11,8],[15,5],[18,7],[27,3],[25,12],[29,16],[29,22],[26,27],[22,27],[19,30],[13,28],[9,29],[5,26],[3,21],[4,15]],'#20203f');
+ poly([[6,7],[11,11],[16,9],[22,10],[25,6],[23,16],[27,18],[27,22],[23,25],[19,25],[17,27],[12,25],[8,26],[5,21],[7,14]],'#6B4BC0');
+ poly([[7,10],[11,13],[10,17],[6,17]],'#F4A5CC');poly([[22,12],[24,8],[23,16],[20,16]],'#F4A5CC');
+ poly([[7,19],[11,15],[20,14],[25,17],[25,23],[21,26],[11,26],[6,22]],'#A68BE5');
+ poly([[10,18],[14,18],[14,22],[10,22]],'#211D3F');poly([[18,17],[22,17],[22,21],[18,21]],'#211D3F');
+ a.fillStyle='#D9FAFC';a.fillRect(11,18,3,3);a.fillRect(19,17,3,3);a.fillStyle='#75E7F1';a.fillRect(12,19,2,2);a.fillRect(20,18,2,2);a.fillStyle='#FFFFFF';a.fillRect(12,18,1,1);a.fillRect(20,17,1,1);
+ a.fillStyle='#CB78CC';a.fillRect(14,23,4,2);a.fillStyle='#372447';a.fillRect(15,22,2,1);a.fillStyle='#D5B4F8';a.fillRect(8,16,3,1);a.fillRect(22,23,2,1);
+ poly([[23,26],[27,26],[29,24],[30,25],[29,29],[25,30],[22,28]],'#20203f');poly([[24,27],[28,26],[27,29],[24,29]],'#85D9E9');
+ rawCtx.clearRect(0,0,SIZE,SIZE);rawCtx.imageSmoothingEnabled=false;rawCtx.drawImage(c,0,0,SIZE,SIZE);rawImageData=rawCtx.getImageData(0,0,SIZE,SIZE);alphaMask.fill(255);undoMasks=[];currentSpriteId=null;syncSourceFromMask();spriteBaseName='starlit-demo';$('spriteName').textContent='Starlit • demo creature';$('spriteDimensions').textContent='Demo sprite • 128 × 128';$('stageCaption').textContent='128 × 128 · pixel perfect';activeSlot().id=null;drawPending=true;draw();}
+function downloadBlob(blob,name){const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),8000);}
+function fileStem(){return `${spriteBaseName}-${state.preset.toLowerCase().replace(/[^a-z0-9]+/g,'-')}-linear`;}
+// Export one or more complete, deterministic animation cycles.
+// A video does not dictate auto-repeat to all players: the built-in video player
+// loops, and other playback software should enable its own Loop setting.
+let exportCancelled=false,exportVideoURL=null;
+const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+function supportedMediaType(fmt){
+ const variants=fmt==='mp4'?["video/mp4;codecs=avc1.42E01E",'video/mp4']:["video/webm;codecs=vp9",'video/webm;codecs=vp8','video/webm'];
+ return typeof MediaRecorder==='function'?variants.find(type=>MediaRecorder.isTypeSupported(type))||null:null;
+}
+function updateVideoNote(){
+ const fps=Number($('videoFps').value),cycles=Number($('videoCycles').value),seconds=(5/state.speed)*cycles;
+ $('videoNote').textContent=`${cycles} cycle${cycles>1?'s':''} · ${seconds.toFixed(1)}s at ${fps} FPS · ${(Number($('videoResolution').value))}×${(Number($('videoResolution').value))}. WebM transparency is player/codec-dependent; chroma green gives reliable masking in editors.`;
+}
+['videoFormat','videoFps','videoResolution','videoCycles','videoBg'].forEach(id=>{$(id).addEventListener('change',()=>{
+ if($('videoFormat').value==='mp4'&&$('videoBg').value==='transparent'){
+  $('videoBg').value='black';notify('MP4 does not reliably carry alpha. Switched to black background.');
+ }
+ updateVideoNote();
+});});
+$('cancelVideoBtn').onclick=()=>{exportCancelled=true;$('videoProgress').textContent='Cancelling recording…';};
+function paintVideoFrame(ctx,side,bg,p){
+ renderFx(p);
+ if(bg==='transparent')ctx.clearRect(0,0,side,side);
+ else{ctx.fillStyle=({black:'#000000',white:'#ffffff',green:'#00ff00'})[bg];ctx.fillRect(0,0,side,side);}
+ ctx.imageSmoothingEnabled=false;ctx.drawImage(fxCanvas,0,0,side,side);
+}
+// Chrome/Edge MediaRecorder often omits WebM Duration, which makes seeking and
+// looping unreliable in certain players. Insert the EBML Duration metadata
+// without transcoding. If the encoder writes an unfamiliar layout, leave it.
+async function addWebmDuration(blob, milliseconds){
+ const bytes=new Uint8Array(await blob.arrayBuffer());
+ let info=-1;
+ for(let i=0;i<Math.min(bytes.length-8,4096);i++){
+  if(bytes[i]===0x15&&bytes[i+1]===0x49&&bytes[i+2]===0xA9&&bytes[i+3]===0x66){info=i;break;}
+ }
+ if(info<0)return blob;
+ const sizePos=info+4,first=bytes[sizePos];
+ if(!first)return blob;
+ let marker=0x80,width=1;
+ while(width<=8&&!(first&marker)){width++;marker>>=1;}
+ if(width>8||sizePos+width>bytes.length)return blob;
+ let oldSize=first&(marker-1);
+ for(let j=1;j<width;j++)oldSize=oldSize*256+bytes[sizePos+j];
+ const maxSize=Math.pow(2,7*width)-1,added=11;
+ if(oldSize>=maxSize||oldSize+added>=maxSize)return blob;
+ const insertAt=sizePos+width+oldSize;
+ if(insertAt>bytes.length)return blob;
+ for(let j=sizePos+width;j<insertAt-2;j++)if(bytes[j]===0x44&&bytes[j+1]===0x89)return blob;
+ const updated=new Uint8Array(bytes.length+added);
+ updated.set(bytes.subarray(0,insertAt));
+ updated[insertAt]=0x44;updated[insertAt+1]=0x89;updated[insertAt+2]=0x88;
+ new DataView(updated.buffer).setFloat64(insertAt+3,milliseconds/1,false); // 1 ms default TimecodeScale
+ updated.set(bytes.subarray(insertAt),insertAt+added);
+ // Write size as a same-width EBML integer (preserves all other offsets).
+ let size=oldSize+added;
+ for(let j=width-1;j>=0;j--){updated[sizePos+j]=size&255;size=Math.floor(size/256);}
+ updated[sizePos]|=marker;
+ return new Blob([updated],{type:'video/webm'});
+}
+async function recordLoopVideo(){
+ if(exporting)return;
+ const fmt=$('videoFormat').value,mime=supportedMediaType(fmt);
+ if(!mime){notify(fmt==='mp4'?'MP4 encoding is unavailable in this Edge/Chrome version. Use WebM instead.':'This browser does not support video recording. Update Edge/Chrome.');return;}
+ if(!HTMLCanvasElement.prototype.captureStream){notify('Canvas video capture is unavailable. Update Edge/Chrome.');return;}
+ if(fmt==='mp4'&&$('videoBg').value==='transparent'){notify('For MP4, choose a solid or green background.');return;}
+ exporting=true;exportCancelled=false;
+ $('videoBtn').disabled=true;$('configBtn').disabled=true;$('cancelVideoBtn').style.display='inline-flex';
+ const fps=Number($('videoFps').value),side=Number($('videoResolution').value),cycles=Number($('videoCycles').value);
+ const duration=5000*cycles/state.speed,frames=Math.max(2,Math.round(duration*fps/1000));
+ const bg=$('videoBg').value;
+ const canvas=document.createElement('canvas');canvas.width=canvas.height=side;
+ const context=canvas.getContext('2d',{alpha:bg==='transparent'});
+ const stream=canvas.captureStream(0); // requestFrame triggers exactly our chosen frame.
+ const track=stream.getVideoTracks()[0];
+ let recorder,parts=[],failure=null;
+ try{
+  recorder=new MediaRecorder(stream,{mimeType:mime,videoBitsPerSecond:8000000});
+  recorder.ondataavailable=e=>{if(e.data&&e.data.size)parts.push(e.data);};
+  const done=new Promise((resolve,reject)=>{recorder.onstop=resolve;recorder.onerror=e=>{failure=e.error||new Error('Video encoder failed');reject(failure);};});
+  recorder.start(1000);
+  // Allow codec initialization before the first requested frame.
+  await sleep(80);
+  const start=performance.now(),interval=duration/frames;
+  for(let f=0;f<frames;f++){
+   if(exportCancelled)break;
+   const due=start+f*interval,delay=due-performance.now();if(delay>1)await sleep(delay);
+   // One complete loop is phase [0,1), never an extra duplicate end frame.
+   const p=fraction((f/frames)*cycles);
+   paintVideoFrame(context,side,bg,p);
+   track.requestFrame();
+   if(f%Math.max(1,Math.floor(fps/3))===0){$('videoProgress').textContent=`Recording ${Math.round(f/frames*100)}% · ${f+1} / ${frames} frames`;}
+   // Yield for UI responsiveness even on fast machines.
+   if(f%30===29)await sleep(0);
+  }
+  if(!exportCancelled){const delay=start+duration-performance.now();if(delay>0)await sleep(delay);}
+  if(recorder.state!=='inactive')recorder.stop();
+  await done;
+  if(!exportCancelled){
+   const ext=fmt==='mp4'?'mp4':'webm';let blob=new Blob(parts,{type:mime.split(';')[0]});if(fmt==='webm')blob=await addWebmDuration(blob,duration);
+   if(blob.size<128)throw new Error('The recorder produced an empty video. Try WebM.');
+   downloadBlob(blob,`${fileStem()}-${side}px-${fps}fps-loop.${ext}`);
+   if(exportVideoURL)URL.revokeObjectURL(exportVideoURL);
+   exportVideoURL=URL.createObjectURL(blob);
+   $('videoPreview').src=exportVideoURL;$('videoPreview').style.display='block';$('videoPreview').loop=true;
+   $('videoProgress').textContent=`Saved ${ext.toUpperCase()} · ${(blob.size/1024).toFixed(0)} KB · ${frames} frames. Preview below loops automatically.`;
+   notify('Looping video exported ✦');
+  }else $('videoProgress').textContent='Recording cancelled. No file saved.';
+ }catch(e){
+  console.error('Video export:',e);$('videoProgress').textContent='Video export failed: '+e.message;
+  notify('Video export failed: '+e.message);
+  if(recorder&&recorder.state!=='inactive')try{recorder.stop();}catch(_){ }
+ }finally{
+  stream.getTracks().forEach(t=>t.stop());
+  exporting=false;$('videoBtn').disabled=false;$('configBtn').disabled=false;$('cancelVideoBtn').style.display='none';
+  drawPending=true;draw();
+ }
+}
+$('videoBtn').onclick=recordLoopVideo;
+$('configBtn').onclick=()=>{const settings={app:'SPECTRA Loop Lab Desktop',version:25,type:'sprite-gradient',blendMode:'tint',cssGradient:currentCssCode(),cssMode:!!state.cssStops,cssStops:state.cssStops,spriteSize:[128,128],palette:state.palette,opacity:state.intensity/100,speed:state.speed,colorSpacing:state.scale,angleDegrees:state.angle,movementDirection:state.direction,pattern:'linear',spriteTransparency:state.spriteTransparency,video:{format:$('videoFormat').value,fps:Number($('videoFps').value),resolution:Number($('videoResolution').value),cycles:Number($('videoCycles').value),background:$('videoBg').value}};downloadBlob(new Blob([JSON.stringify(settings,null,2)],{type:'application/json'}),fileStem()+'-settings.json');notify('Settings exported');};
+document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.code==='KeyO'){e.preventDefault();$('fileInput').click();return;}const tag=document.activeElement?.tagName;if((e.ctrlKey||e.metaKey)&&e.code==='KeyZ'){e.preventDefault();undoMask();return;}if(tag==='INPUT'||tag==='SELECT'||e.ctrlKey||e.metaKey||e.altKey)return;if(e.code==='Space'){e.preventDefault();togglePlaying();}else if(e.code==='KeyR'){$('randomizeBtn').click();}});
+let lastFrame=0,lastTick=0;
+function animate(now){if(!lastTick)lastTick=now;const dt=Math.min(80,now-lastTick);lastTick=now;if(state.playing){phase=fraction(phase+dt*state.speed/5000);drawPending=true;}if(!exporting&&(drawPending||now-lastFrame>1000/25)){if(state.playing||drawPending){draw();lastFrame=now;}}requestAnimationFrame(animate);}
+refreshPaletteRGB();loadLibrary();drawDemo();
+const savedSides=storageAvailable()?safeJsonParse(localStorage.getItem(SIDE_STORE)||'{}',{}):{};
+const lastSaved=storageAvailable()?localStorage.getItem(LIBRARY_LAST_KEY):null;
+const frontId=savedSides.front||lastSaved;
+if(frontId&&spriteLibrary.some(item=>item.id===frontId))loadSavedSprite(frontId,false,'front');
+if(savedSides.back&&spriteLibrary.some(item=>item.id===savedSides.back)){
+ const savedBack=spriteLibrary.find(item=>item.id===savedSides.back);
+ // Decode back independently; do not steal the front editor while restoring.
+ const img=new Image();img.onload=()=>{const s=slots.back;s.rawCtx.clearRect(0,0,SIZE,SIZE);s.rawCtx.drawImage(img,0,0,SIZE,SIZE);s.sourceCtx.clearRect(0,0,SIZE,SIZE);s.sourceCtx.drawImage(img,0,0,SIZE,SIZE);s.rawImageData=s.rawCtx.getImageData(0,0,SIZE,SIZE);s.sourceImageData=s.sourceCtx.getImageData(0,0,SIZE,SIZE);s.id=savedBack.id;s.name=savedBack.name;s.baseName=savedBack.baseName||slugifyName(savedBack.name);s.dims='Saved sprite • 128 × 128';s.caption='128 × 128 · Back';updateSideUI();drawPending=true;draw();};img.src=savedBack.dataUrl;
+}
+dualEnabled=storageAvailable()&&localStorage.getItem(DUAL_STORE)==='1';
+updateSideUI();refreshAll();requestAnimationFrame(animate);
+</script>
+</body>
+</html>
